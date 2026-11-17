@@ -1,0 +1,4 @@
+# Vite/TS 构建缓存
+dist/
+node_modules/
+*.tsbuildinfo
