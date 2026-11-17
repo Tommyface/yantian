@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>砚田 · 遴选写作素材知识库</title>
+<meta name="description" content="砚田——面向体制内遴选备考的写作素材知识库，采集·沉淀·调取·内化闭环，桌面与移动端一致体验。">
+<style>
+:root{
+  --ink:#0d1c2e; --ink-2:#162b45; --primary:#2c5d96; --primary-l:#4a7fb8;
+  --gold:#a87c33; --gold-l:#e5d3a0; --bg:#f6f7f9; --card:#fff;
+  --text:#1c2733; --muted:#5b6b7c; --line:#e5e9ef;
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  --font-serif:"Songti SC","SimSun","STSong",Georgia,serif;
+  --shadow:0 10px 30px -12px rgba(13,28,46,.18);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font-sans);color:var(--text);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+/* Hero */
+.hero{background:linear-gradient(135deg,var(--ink),var(--ink-2) 60%,#1d3b5e);color:#fff;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;opacity:.25;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:34px 34px}
+.hero::after{content:"";position:absolute;right:-80px;top:-120px;width:460px;height:460px;border-radius:50%;background:radial-gradient(circle,rgba(229,211,160,.18),transparent 66%)}
+.hero .wrap{position:relative;z-index:1;padding-top:70px;padding-bottom:64px}
+.brand{display:flex;align-items:center;gap:14px;margin-bottom:44px}
+.seal{width:52px;height:52px;border:2px solid var(--gold-l);border-radius:10px;display:grid;place-items:center;font-family:var(--font-serif);font-size:27px;color:var(--gold-l);background:rgba(229,211,160,.08)}
+.brand-txt b{font-family:var(--font-serif);font-size:21px;letter-spacing:.14em;display:block}
+.brand-txt span{font-size:11px;letter-spacing:.28em;color:var(--gold-l);text-transform:uppercase}
+.hero h1{font-family:var(--font-serif);font-size:44px;font-weight:600;letter-spacing:.02em;line-height:1.3;margin-bottom:16px}
+.hero h1 em{font-style:normal;color:var(--gold-l)}
+.hero .lead{font-size:16px;color:#c9d6e4;max-width:640px;line-height:1.9}
+.hero .lead b{color:#fff;font-weight:600}
+.cta-row{display:flex;gap:14px;flex-wrap:wrap;margin-top:34px}
+.btn{display:inline-flex;align-items:center;gap:9px;padding:13px 24px;border-radius:9px;font-size:14px;font-weight:600;transition:all .2s ease;cursor:pointer}
+.btn-gold{background:linear-gradient(135deg,var(--gold-l),#d8bf82);color:#3a2a10}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 8px 22px -6px rgba(229,211,160,.5)}
+.btn-ghost{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.22)}
+.btn-ghost:hover{background:rgba(255,255,255,.14)}
+.btn svg{width:16px;height:16px}
+
+/* Stats */
+.stats{background:#fff;border-bottom:1px solid var(--line)}
+.stats .wrap{display:grid;grid-template-columns:repeat(4,1fr);padding-top:26px;padding-bottom:26px}
+.stat{text-align:center;border-right:1px solid var(--line)}
+.stat:last-child{border-right:0}
+.stat b{font-family:var(--font-serif);font-size:30px;color:var(--primary);display:block;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat b i{font-style:normal;font-size:16px;color:var(--gold)}
+.stat span{font-size:12px;color:var(--muted);letter-spacing:.06em}
+
+/* Section */
+section{padding:60px 0}
+.sec-head{text-align:center;margin-bottom:38px}
+.sec-head .kicker{font-size:12px;letter-spacing:.22em;color:var(--gold);font-weight:700;text-transform:uppercase}
+.sec-head h2{font-family:var(--font-serif);font-size:29px;margin-top:10px;color:var(--ink)}
+.sec-head p{color:var(--muted);font-size:14px;margin-top:8px}
+
+/* Features */
+.features{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.feat{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:24px 20px;box-shadow:var(--shadow);transition:transform .2s ease}
+.feat:hover{transform:translateY(-4px)}
+.feat .ic{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#eef4fb,#dce9f7);display:grid;place-items:center;margin-bottom:16px}
+.feat .ic svg{width:22px;height:22px;stroke:var(--primary);fill:none;stroke-width:1.8}
+.feat h3{font-size:15px;margin-bottom:8px;color:var(--ink)}
+.feat p{font-size:12.5px;color:var(--muted);line-height:1.75}
+
+/* Gallery */
+.gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.shot{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);transition:transform .2s ease}
+.shot:hover{transform:translateY(-4px)}
+.shot .frame{padding:14px;background:#eef1f5;display:flex;justify-content:center;align-items:flex-start;min-height:250px;overflow:hidden}
+.shot .frame img{width:100%;height:auto;display:block;border-radius:8px;box-shadow:0 6px 18px -8px rgba(0,0,0,.3)}
+.shot.mobile .frame{background:linear-gradient(135deg,#eef1f5,#e3e9f0)}
+.shot.mobile .frame img{max-width:190px}
+.shot .cap{padding:14px 18px}
+.shot .cap b{font-size:14px;color:var(--ink)}
+.shot .cap span{font-size:12px;color:var(--muted);float:right}
+
+/* Link banner */
+.banner{background:linear-gradient(135deg,var(--ink),var(--primary));color:#fff;text-align:center;padding:52px 24px}
+.banner h2{font-family:var(--font-serif);font-size:27px;margin-bottom:12px}
+.banner p{color:#c9d6e4;font-size:14px;margin-bottom:26px}
+
+/* Footer */
+footer{background:var(--ink);color:#8fa3b8;text-align:center;padding:28px 24px;font-size:12px}
+footer a{color:var(--gold-l)}
+footer .dot{margin:0 8px;opacity:.5}
+
+@media(max-width:760px){
+  .hero h1{font-size:32px}
+  .stats .wrap{grid-template-columns:repeat(2,1fr);gap:20px 0}
+  .stat:nth-child(2){border-right:0}
+  .features{grid-template-columns:repeat(2,1fr)}
+  .gallery{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="brand">
+      <div class="seal">砚</div>
+      <div class="brand-txt"><b>砚田</b><span>Yantian · Knowledge Base</span></div>
+    </div>
+    <h1>让每一份素材，<br>都成为<em>下笔时的底气</em></h1>
+    <p class="lead">面向体制内遴选备考的写作素材知识库。从人民日报、求是、半月谈等优质来源<b>采集</b>金句与小标题，结构化<b>沉淀</b>为可追溯素材，写作时精准<b>调取</b>，复习中稳步<b>内化</b>——打通「采集 → 沉淀 → 调取 → 内化」的完整闭环。</p>
+    <div class="cta-row">
+      <a class="btn btn-gold" href="design/index.html">查看完整设计方案
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <a class="btn btn-ghost" href="https://github.com/Tommyface/yantian" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.58 2 12.23c0 4.51 2.87 8.34 6.84 9.69.5.09.68-.22.68-.48v-1.7c-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.91-.63.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.9 1.57 2.34 1.12 2.91.86.09-.66.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.4 9.4 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.8-4.57 5.05.36.32.68.94.68 1.9v2.82c0 .27.18.58.69.48A10.23 10.23 0 0 0 22 12.23C22 6.58 17.52 2 12 2z"/></svg>
+        GitHub 仓库
+      </a>
+    </div>
+  </div>
+</header>
+
+<div class="stats">
+  <div class="wrap">
+    <div class="stat"><b>10<i> 屏</i></b><span>桌面 + 移动界面</span></div>
+    <div class="stat"><b>76<i> ✓</i></b><span>测试用例全绿</span></div>
+    <div class="stat"><b>18<i> 类</i></b><span>优质素材来源</span></div>
+    <div class="stat"><b>v2.2</b><span>设计方案版本</span></div>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Design Highlights</div>
+      <h2>为深度写作而设计</h2>
+      <p>墨蓝 + 暖金的沉静视觉，克制而专注，呼应慢读与深思的备考节奏</p>
+    </div>
+    <div class="features">
+      <div class="feat">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+        <h3>采集 · 沉淀</h3>
+        <p>拾页联动抓取原文，AI 候选抽取后逐字校验、人工确认，出处可追溯，杜绝误引。</p>
+      </div>
+      <div class="feat">
+        <div class="ic"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div>
+        <h3>调取 · 检索</h3>
+        <p>SQLite FTS5 中文子串检索，主题素材包一键聚合，写作台带出处引用随时取用。</p>
+      </div>
+      <div class="feat">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+        <h3>复习 · 内化</h3>
+        <p>翻卡式复习，按掌握度排序「待巩固优先」，让素材真正转化为考场上的表达。</p>
+      </div>
+      <div class="feat">
+        <div class="ic"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg></div>
+        <h3>双端一致</h3>
+        <p>桌面三栏工作台与移动端单列布局共用一套设计令牌，通勤速记与深度写作无缝衔接。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="background:#eef1f5">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Interface Preview</div>
+      <h2>界面一览</h2>
+      <p>以下为高保真预览缩略图，点击进入设计方案查看全部细节</p>
+    </div>
+    <div class="gallery">
+      <a class="shot" href="design/index.html">
+        <div class="frame"><img src="design/preview/01-home.png" alt="今日 - 桌面端"></div>
+        <div class="cap"><b>今日 · 桌面</b><span>统计与趋势</span></div>
+      </a>
+      <a class="shot" href="design/index.html">
+        <div class="frame"><img src="design/preview/03-write.png" alt="写作台 - 桌面端"></div>
+        <div class="cap"><b>写作台 · 桌面</b><span>素材包与编辑器</span></div>
+      </a>
+      <a class="shot mobile" href="design/index.html">
+        <div class="frame"><img src="design/preview/06-mobile-home.png" alt="今日 - 移动端"></div>
+        <div class="cap"><b>今日 · 移动</b><span>Hero 与统计</span></div>
+      </a>
+      <a class="shot mobile" href="design/index.html">
+        <div class="frame"><img src="design/preview/10-mobile-review.png" alt="复习 - 移动端"></div>
+        <div class="cap"><b>复习 · 移动</b><span>翻卡内化</span></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<div class="banner">
+  <h2>查看完整界面设计方案</h2>
+  <p>设计令牌 · 核心组件 · 桌面五屏 · 移动五屏 · 设计原则</p>
+  <a class="btn btn-gold" href="design/index.html">进入设计方案
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+  </a>
+</div>
+
+<footer>
+  砚田 · 遴选写作素材知识库　<span class="dot">|</span>设计方案 v2.2 · 2026.11
+  <br><a href="https://github.com/Tommyface/yantian" target="_blank" rel="noopener">github.com/Tommyface/yantian</a>
+</footer>
+
+</body>
+</html>
