@@ -1,0 +1,92 @@
+name: Build Yantian Mobile APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install Android SDK packages
+        run: |
+          set -e
+          SDK_ROOT="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          echo "SDK_ROOT=$SDK_ROOT"
+          SDKMANAGER=$(find "$SDK_ROOT/cmdline-tools" -maxdepth 3 -name sdkmanager -type f | head -n 1)
+          echo "sdkmanager=$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
+          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Build web assets
+        run: pnpm build
+
+      - name: Sync Capacitor
+        run: pnpm exec cap sync android
+
+      - name: Make gradlew executable
+        run: chmod +x android/gradlew
+
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Locate APK
+        id: apk
+        run: |
+          APK=$(find android/app/build/outputs/apk/debug -name '*.apk' | head -n 1)
+          echo "path=$APK" >> "$GITHUB_OUTPUT"
+          cp "$APK" yantian-mobile-debug.apk
+          echo "size=$(stat -c%s yantian-mobile-debug.apk)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: yantian-mobile-apk
+          path: yantian-mobile-debug.apk
+          if-no-files-found: error
+
+      - name: Create Release with APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.4.0-android
+          name: 砚田 v0.4.0 · Android 移动版
+          body: |
+            砚田 Android 移动版 —— 完整离线内核（检索/复习/生成卡片），数据留在本机。
+
+            - 本地 md + 坚果云 WebDAV 同步（App 内配置应用专用密码）
+            - 采集 → 逐字校验抽取 → 确认入库 → 检索 → 复习 全链路
+            - Capacitor + WebView 内核，离线可用
+
+            安装：下载 APK，在安卓手机上安装（需允许安装未知来源应用）。
+          files: yantian-mobile-debug.apk
+          draft: false
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
