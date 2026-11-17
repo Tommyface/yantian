@@ -1,0 +1,18 @@
+{
+  "appId": "cn.yantian.mobile",
+  "appName": "砚田",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": false,
+    "webContentsDebuggingEnabled": false,
+    "backgroundColor": "#163254"
+  },
+  "plugins": {
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#163254"
+    }
+  }
+}
