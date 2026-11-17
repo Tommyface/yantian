@@ -1,0 +1,35 @@
+{
+  "name": "yantian",
+  "version": "0.3.0-p2",
+  "private": true,
+  "description": "砚田 · 遴选写作素材知识库 — P2 本地服务、AI 抽取、写作台与 Web 界面",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "verify": "npm run typecheck && npm run test",
+    "start": "tsx src/p2/main.ts",
+    "dev": "tsx watch src/p2/main.ts"
+  },
+  "dependencies": {
+    "better-sqlite3": "11.10.0",
+    "fflate": "^0.8.3",
+    "gray-matter": "^4.0.3",
+    "js-yaml": "^5.5.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.10.7",
+    "tsx": "^4.23.15",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3",
+      "esbuild"
+    ]
+  }
+}

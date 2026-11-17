@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>砚田 · 遴选素材库</title>
+<style>
+  :root{
+    --bg:#f5f5f4; --surface:#fff; --ink:#1a1a1a; --ink2:#555; --ink3:#8a8a8a;
+    --line:#ececeb; --accent:#1a1a1a; --soft:#f0f0ef; --ok:#2f6b4f; --warn:#9a6a1f;
+    --radius:10px; --shadow:0 1px 3px rgba(0,0,0,.05),0 6px 20px rgba(0,0,0,.04);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft Yahei",sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+  .app{display:flex;min-height:100vh;max-width:1400px;margin:0 auto}
+  /* 侧栏 */
+  .side{width:210px;flex:none;padding:28px 16px;border-right:1px solid var(--line);
+    position:sticky;top:0;height:100vh;display:flex;flex-direction:column}
+  .brand{font-size:20px;font-weight:700;letter-spacing:.06em;padding:0 12px 4px}
+  .brand small{display:block;font-size:11px;color:var(--ink3);font-weight:400;letter-spacing:.02em;margin-top:2px}
+  .nav{margin-top:28px;display:flex;flex-direction:column;gap:4px}
+  .nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;
+    color:var(--ink2);text-decoration:none;font-size:14px;cursor:pointer;transition:.15s}
+  .nav a:hover{background:var(--soft)}
+  .nav a.active{background:var(--ink);color:#fff}
+  .nav a .ic{width:18px;text-align:center;opacity:.85}
+  .side-foot{margin-top:auto;padding:12px;font-size:11px;color:var(--ink3);line-height:1.7}
+  .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#bbb;margin-right:6px}
+  .dot.on{background:var(--ok)}
+  /* 主区 */
+  .main{flex:1;padding:32px 40px;min-width:0}
+  .top{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+  .top h1{font-size:26px;font-weight:700;letter-spacing:-.02em}
+  .top p{color:var(--ink3);font-size:13px;margin-top:2px}
+  .btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);
+    padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;transition:.15s;font-family:inherit}
+  .btn:hover{border-color:#ccc;background:#fafafa}
+  .btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .btn.primary:hover{background:#333}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn.sm{padding:5px 11px;font-size:12px}
+  /* 统计卡 */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:28px}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px}
+  .stat .n{font-size:30px;font-weight:700;letter-spacing:-.03em}
+  .stat .l{font-size:12px;color:var(--ink3);margin-top:3px}
+  /* 工具条 */
+  .bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;align-items:center}
+  .search{flex:1;min-width:200px;display:flex;align-items:center;gap:8px;background:var(--surface);
+    border:1px solid var(--line);border-radius:8px;padding:0 14px;height:42px}
+  .search input{border:0;outline:0;flex:1;font-size:14px;background:transparent;font-family:inherit;color:var(--ink)}
+  select{border:1px solid var(--line);background:var(--surface);border-radius:8px;height:42px;
+    padding:0 12px;font-size:13px;font-family:inherit;color:var(--ink);cursor:pointer}
+  /* 卡片列表 */
+  .list{display:flex;flex-direction:column;gap:10px}
+  .item{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px 18px;transition:.15s}
+  .item:hover{box-shadow:var(--shadow)}
+  .item .content{font-size:15px;line-height:1.75;white-space:pre-wrap}
+  .item .meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px;font-size:11px;color:var(--ink3)}
+  .tag{background:var(--soft);color:var(--ink2);padding:2px 9px;border-radius:20px;font-size:11px}
+  .tag.t{background:#eef0f5;color:#3a4a6a}
+  .pill{padding:2px 9px;border-radius:20px;font-size:11px}
+  .pill.confirmed{background:#eaf3ee;color:var(--ok)}
+  .pill.candidate{background:#f7f0e4;color:var(--warn)}
+  .pill.used{background:#eee;color:#666}
+  .item .acts{display:flex;gap:6px;margin-left:auto}
+  .item a.src{color:var(--ink3);text-decoration:none}
+  .item a.src:hover{color:var(--ink);text-decoration:underline}
+  /* 空状态 */
+  .empty{text-align:center;padding:70px 20px;color:var(--ink3)}
+  .empty .big{font-size:40px;margin-bottom:12px;opacity:.35}
+  .empty p{font-size:14px}
+  /* 主题包 */
+  .bundle-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:20px}
+  .topic-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px;cursor:pointer;transition:.15s}
+  .topic-card:hover{box-shadow:var(--shadow);border-color:#d5d5d5}
+  .topic-card.active{background:var(--ink);color:#fff}
+  .topic-card .tn{font-size:15px;font-weight:600}
+  .topic-card .tc{font-size:12px;opacity:.6;margin-top:4px}
+  .sec-title{font-size:14px;font-weight:600;margin:22px 0 10px;display:flex;align-items:center;gap:8px}
+  .sec-title::before{content:"";width:3px;height:14px;background:var(--ink);border-radius:2px}
+  /* 复习卡 */
+  .rv{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:28px;
+    max-width:640px;margin:0 auto;text-align:center;min-height:200px;cursor:pointer;user-select:none}
+  .rv .front{font-size:18px;color:var(--ink3);margin-top:40px}
+  .rv .back{font-size:19px;line-height:1.8}
+  .rv .origin{font-size:12px;color:var(--ink3);margin-top:18px;word-break:break-all}
+  .rv .hint{font-size:11px;color:#bbb;margin-top:30px}
+  .rv-nav{display:flex;justify-content:center;gap:10px;margin-top:18px;align-items:center}
+  /* 抽取候选 */
+  .cand{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface);margin-bottom:10px}
+  .cand .txt{font-size:14px;line-height:1.7}
+  .cand .foot{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:11px;color:var(--ink3)}
+  .conf{font-variant-numeric:tabular-nums}
+  /* 弹层 */
+  .modal-mask{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;
+    justify-content:center;padding:20px;z-index:50}
+  .modal-mask.show{display:flex}
+  .modal{background:var(--surface);border-radius:14px;padding:26px;width:100%;max-width:480px;max-height:85vh;overflow:auto}
+  .modal h3{font-size:17px;margin-bottom:16px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:12px;color:var(--ink2);margin-bottom:6px}
+  .field textarea,.field select,.field input{width:100%;border:1px solid var(--line);border-radius:8px;
+    padding:10px 12px;font-size:14px;font-family:inherit;color:var(--ink);background:var(--surface)}
+  .field textarea{min-height:90px;resize:vertical;line-height:1.7}
+  .modal-acts{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+  /* toast */
+  #toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;
+    opacity:0;transition:.25s;z-index:100;pointer-events:none}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .loading{color:var(--ink3);font-size:13px;padding:20px 0}
+  @media(max-width:820px){
+    .side{width:64px;padding:20px 8px}
+    .brand{font-size:0;padding:0 8px}.brand::first-letter{font-size:20px}
+    .brand small,.nav a span.tx,.side-foot{display:none}
+    .nav a{justify-content:center;padding:12px}
+    .main{padding:22px 18px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand">砚田<small>遴选写作素材库</small></div>
+    <nav class="nav" id="nav">
+      <a data-view="home" class="active"><span class="ic">◎</span><span class="tx">今日</span></a>
+      <a data-view="library"><span class="ic">▤</span><span class="tx">素材库</span></a>
+      <a data-view="write"><span class="ic">✎</span><span class="tx">写作台</span></a>
+      <a data-view="capture"><span class="ic">＋</span><span class="tx">采集</span></a>
+      <a data-view="review"><span class="ic">◷</span><span class="tx">复习</span></a>
+    </nav>
+    <div class="side-foot"><span class="dot" id="statusDot"></span><span id="statusText">连接中…</span><br>本地运行 · 数据不出本机</div>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+
+<div class="modal-mask" id="modalMask"><div class="modal" id="modal"></div></div>
+<div id="toast"></div>
+
+<script>
+const $ = (s)=>document.querySelector(s);
+const main = $('#main');
+let state = { view:'home', stats:null, notes:[], topics:[], bundleTopic:null,
+  reviewDeck:[], rvIndex:0, rvFlipped:false, searchQ:'', candidates:[] };
+
+async function api(path, method='GET', body){
+  const r = await fetch(path, { method, headers: body?{'Content-Type':'application/json'}:undefined,
+    body: body?JSON.stringify(body):undefined });
+  const t = await r.text(); let d; try{d=JSON.parse(t)}catch{d=t}
+  if(!r.ok) throw new Error((d&&d.error)||('HTTP '+r.status));
+  return d;
+}
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function openModal(html){$('#modal').innerHTML=html;$('#modalMask').classList.add('show')}
+function closeModal(){$('#modalMask').classList.remove('show')}
+$('#modalMask').addEventListener('click',e=>{if(e.target===$('#modalMask'))closeModal()});
+
+// ---------- 视图 ----------
+async function viewHome(){
+  main.innerHTML = `<div class="top"><div><h1>今日</h1><p>沉淀一点，考场从容一分</p></div>
+    <div><button class="btn" onclick="doScan()">⟳ 同步拾页库</button></div></div>
+    <div class="stats" id="statsBox"><div class="loading">加载中…</div></div>
+    <div class="sec-title">最近入库</div><div id="recent" class="loading">加载中…</div>`;
+  state.stats = await api('/api/stats');
+  const s = state.stats;
+  $('#statsBox').innerHTML = [
+    ['笔记原文', s.notes],['素材卡片', s.cards],['已确认', s.byStatus.confirmed||0],['待确认', s.byStatus.candidate||0]
+  ].map(([l,n])=>`<div class="stat"><div class="n">${n}</div><div class="l">${l}</div></div>`).join('');
+  const cards = await api('/api/cards');
+  const recent = cards.slice(-6).reverse();
+  $('#recent').innerHTML = recent.length ? `<div class="list">${recent.map(cardHTML).join('')}</div>`
+    : `<div class="empty"><div class="big">✎</div><p>还没有素材。先「同步拾页库」，再去采集第一条。</p></div>`;
+  bindCardActs();
+}
+
+async function viewLibrary(){
+  main.innerHTML = `<div class="top"><div><h1>素材库</h1><p>全文检索 · 多维筛选</p></div></div>
+    <div class="bar">
+      <div class="search"><span>⌕</span><input id="q" placeholder="搜索金句、标题、关键词…" value="${esc(state.searchQ)}"></div>
+      <select id="fType"><option value="">全部类型</option><option value="golden_sentence">金句</option><option value="subheading">小标题</option><option value="practice">改革实践</option><option value="article">好文章</option></select>
+      <select id="fStatus"><option value="">全部状态</option><option value="candidate">待确认</option><option value="confirmed">已确认</option><option value="used">已用</option></select>
+      <select id="fTopic"><option value="">全部主题</option></select>
+    </div>
+    <div id="libList" class="loading">加载中…</div>`;
+  state.topics = await api('/api/topics');
+  $('#fTopic').innerHTML += state.topics.map(t=>`<option value="${esc(t.topic)}">${esc(t.topic)}</option>`).join('');
+  const run = async()=>{
+    state.searchQ = $('#q').value;
+    let url='/api/search?q='+encodeURIComponent(state.searchQ);
+    if($('#fType').value) url+='&type='+$('#fType').value;
+    if($('#fStatus').value) url+='&status='+$('#fStatus').value;
+    if($('#fTopic').value) url+='&topic='+encodeURIComponent($('#fTopic').value);
+    url+='&limit=100';
+    const r = await api(url);
+    const cards = r.hits.filter(h=>h.kind==='card').map(h=>h.card);
+    $('#libList').innerHTML = cards.length ? `<div class="list">${cards.map(cardHTML).join('')}</div>`
+      : `<div class="empty"><div class="big">⌕</div><p>没有匹配的素材</p></div>`;
+    bindCardActs();
+  };
+  let timer; $('#q').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(run,250)});
+  ['fType','fStatus','fTopic'].forEach(id=>$('#'+id).addEventListener('change',run));
+  run();
+}
+
+function cardHTML(c){
+  const cite = [c.origin.site,c.origin.author].filter(Boolean).join(' · ');
+  return `<div class="item" data-id="${c.cardId}">
+    <div class="content">${esc(c.content)}</div>
+    <div class="meta">
+      <span class="pill ${c.status}">${{candidate:'待确认',confirmed:'已确认',used:'已用'}[c.status]||c.status}</span>
+      ${c.topics.map(t=>`<span class="tag t">${esc(t)}</span>`).join('')}
+      <span class="tag">${{golden_sentence:'金句',subheading:'小标题',practice:'改革实践',article:'好文章'}[c.type]||c.type}</span>
+      ${cite?`<span>${esc(cite)}</span>`:''}
+      ${c.origin.url?`<a class="src" href="${esc(c.origin.url)}" target="_blank">原文↗</a>`:''}
+      <span class="acts">
+        ${c.status==='candidate'?`<button class="btn sm" data-act="confirm">确认</button>`:''}
+        ${c.status==='confirmed'?`<button class="btn sm" data-act="use">标记已用</button>`:''}
+        <button class="btn sm" data-act="copy">复制</button>
+      </span>
+    </div></div>`;
+}
+function bindCardActs(){
+  document.querySelectorAll('.item .acts button').forEach(b=>b.onclick=async()=>{
+    const id=b.closest('.item').dataset.id, act=b.dataset.act;
+    if(act==='copy'){
+      const c=(await api('/api/cards')).find(x=>x.cardId===id);
+      await copyText(citation(c)); toast('已复制（含出处）'); return;
+    }
+    try{
+      if(act==='confirm') await api(`/api/cards/${id}/status`,'PATCH',{status:'confirmed'});
+      if(act==='use') await api(`/api/cards/${id}/status`,'PATCH',{status:'used'});
+      toast('已更新'); const v=state.view; await render(v);
+    }catch(e){toast(e.message)}
+  });
+}
+function citation(c){
+  const src=[c.origin.site,c.origin.author].filter(Boolean).join(' · ');
+  return `“${c.content}”\n—— ${src||'出处见原文'}${c.origin.url?`（${c.origin.url}）`:''}`;
+}
+async function copyText(t){
+  try{await navigator.clipboard.writeText(t)}catch{
+    const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();
+    document.execCommand('copy');a.remove();
+  }
+}
+
+async function viewWrite(){
+  main.innerHTML = `<div class="top"><div><h1>写作台</h1><p>按主题调取成套素材，一键复制含出处</p></div></div>
+    <div class="bundle-grid" id="topicGrid"><div class="loading">加载中…</div></div>
+    <div id="bundleBox"></div>`;
+  state.topics = await api('/api/topics');
+  $('#topicGrid').innerHTML = state.topics.map(t=>
+    `<div class="topic-card ${state.bundleTopic===t.topic?'active':''}" data-topic="${esc(t.topic)}">
+      <div class="tn">${esc(t.topic)}</div><div class="tc">${t.count} 条素材</div></div>`).join('');
+  document.querySelectorAll('.topic-card').forEach(el=>el.onclick=()=>{state.bundleTopic=el.dataset.topic;viewWrite()});
+  const b = await api('/api/bundle'+(state.bundleTopic?'?topic='+encodeURIComponent(state.bundleTopic):''));
+  const groups=[['金句','golden_sentence'],['写作小标题','subheading'],['改革实践','practice'],['好文章','article']];
+  $('#bundleBox').innerHTML = groups.map(([label,key])=>{
+    const list=b[key]; const cited=b[key+'_cited'];
+    if(!list||!list.length) return '';
+    return `<div class="sec-title">${label} · ${list.length}</div><div class="list">${
+      list.map((c,i)=>`<div class="item"><div class="content">${esc(c.content)}</div>
+        <div class="meta"><span>${esc([c.origin.site,c.origin.author].filter(Boolean).join(' · '))}</span>
+        <span class="acts"><button class="btn sm" data-cite="${i}" data-key="${key}">复制引用</button></span></div></div>`).join('')
+    }</div>`;
+  }).join('') || `<div class="empty"><div class="big">✎</div><p>该主题暂无素材，去「采集」沉淀一些。</p></div>`;
+  document.querySelectorAll('[data-cite]').forEach(btn=>btn.onclick=async()=>{
+    await copyText(b[key+'_cited'][Number(btn.dataset.cite)]); toast('已复制引用');
+  });
+}
+
+async function viewCapture(){
+  main.innerHTML = `<div class="top"><div><h1>采集</h1><p>从拾页原文沉淀素材 · 逐字校验，杜绝误引</p></div>
+    <div><button class="btn primary" onclick="openManual()">＋ 手动导入</button></div></div>
+    <div id="notePick" class="loading">加载拾页原文…</div><div id="candBox"></div>`;
+  const notes = (await api('/api/search?q=')).hits.filter(h=>h.kind==='note').map(h=>h.note);
+  if(!notes.length){
+    $('#notePick').innerHTML=`<div class="empty"><div class="big">▤</div><p>还没有原文。先到「今日」同步拾页库。</p></div>`;return;
+  }
+  $('#notePick').innerHTML=`<div class="sec-title">选择原文，AI 抽取候选</div><div class="list">${
+    notes.map(n=>`<div class="item"><div class="content" style="font-size:14px;font-weight:600">${esc(n.front.title||'(无标题)')}</div>
+      <div class="meta"><span>${esc(n.front.site||'')}</span><span>${esc(n.sourceId)}</span>
+      <span class="acts"><button class="btn sm" data-extract="${esc(n.sourceId)}">✦ 抽取候选</button>
+      <button class="btn sm" data-manual="${esc(n.sourceId)}">手动导入</button></span></div></div>`).join('')}</div>`;
+  document.querySelectorAll('[data-extract]').forEach(b=>b.onclick=()=>doExtract(b.dataset.extract));
+  document.querySelectorAll('[data-manual]').forEach(b=>b.onclick=()=>openManual(b.dataset.manual));
+}
+async function doExtract(sourceId){
+  $('#candBox').innerHTML='<div class="loading">✦ 抽取中…</div>';
+  try{
+    const r=await api('/api/extract','POST',{sourceId});
+    state.candidates=r.candidates;
+    $('#candBox').innerHTML=`<div class="sec-title">候选素材 · ${r.candidates.length} 条${r.rejected?`（已丢弃 ${r.rejected} 条非原文片段）`:''}</div>${
+      r.candidates.length? r.candidates.map((c,i)=>`<div class="cand">
+        <div class="txt">${esc(c.content)}</div>
+        <div class="foot"><span class="pill candidate">${{golden_sentence:'金句',subheading:'小标题',practice:'改革实践',article:'好文章'}[c.type]}</span>
+        <span class="conf">置信度 ${(c.confidence*100).toFixed(0)}%</span><span>${esc(c.reason||'')}</span>
+        <span class="acts" style="margin-left:auto"><button class="btn sm primary" data-ok="${i}">确认入库</button></span></div></div>`).join('')
+      :`<div class="empty"><p>未抽取到合适候选，可尝试手动导入</p></div>`}`;
+    document.querySelectorAll('[data-ok]').forEach(btn=>btn.onclick=async()=>{
+      const c=r.candidates[Number(btn.dataset.ok)];
+      try{await api('/api/cards/confirm','POST',{sourceId,content:c.content,type:c.type,topics:c.topics});toast('已确认入库');btn.disabled=true}
+      catch(e){toast(e.message)}
+    });
+  }catch(e){$('#candBox').innerHTML=`<div class="empty"><p>${esc(e.message)}</p></div>`}
+}
+function openManual(sourceId){
+  openModal(`<h3>手动导入素材</h3>
+    <div class="field"><label>来源原文</label><select id="mSource"></select></div>
+    <div class="field"><label>素材内容（须与原文逐字一致）</label><textarea id="mContent" placeholder="从原文中复制一段金句或标题…"></textarea></div>
+    <div class="field"><label>类型</label><select id="mType"><option value="golden_sentence">金句</option><option value="subheading">小标题</option><option value="practice">改革实践</option><option value="article">好文章</option></select></div>
+    <div class="field"><label>主题（逗号分隔）</label><input id="mTopics" placeholder="政策理论, 文字表达"></div>
+    <div class="modal-acts"><button class="btn" onclick="closeModal()">取消</button>
+      <button class="btn primary" id="mSave">导入</button></div>`);
+  api('/api/search?q=').then(r=>{
+    const notes=r.hits.filter(h=>h.kind==='note').map(h=>h.note);
+    $('#mSource').innerHTML=notes.map(n=>`<option value="${esc(n.sourceId)}" ${n.sourceId===sourceId?'selected':''}>${esc(n.front.title||n.sourceId)}</option>`).join('');
+  });
+  $('#mSave').onclick=async()=>{
+    const topics=$('#mTopics').value.split(/[,，]/).map(s=>s.trim()).filter(Boolean);
+    try{
+      await api('/api/cards/manual','POST',{sourceId:$('#mSource').value,content:$('#mContent').value,
+        type:$('#mType').value,topics});closeModal();toast('导入成功');const v=state.view;await render(v);
+    }catch(e){toast('导入失败：'+e.message)}
+  };
+}
+
+async function viewReview(){
+  main.innerHTML=`<div class="top"><div><h1>复习</h1><p>点击卡片翻面 · 待巩固优先</p></div>
+    <div id="rvCount"></div></div><div id="rvBox" class="loading">加载中…</div>`;
+  state.reviewDeck=await api('/api/review');state.rvIndex=0;state.rvFlipped=false;
+  $('#rvCount').innerHTML=`<span class="tag">共 ${state.reviewDeck.length} 张</span>`;
+  if(!state.reviewDeck.length){$('#rvBox').innerHTML=`<div class="empty"><div class="big">◷</div><p>还没有复习卡。素材确认后会自动进入复习。</p></div>`;return}
+  drawReview();
+}
+function drawReview(){
+  const d=state.reviewDeck[state.rvIndex]; if(!d)return;
+  const mLabel={new:'新',reviewing:'巩固中',mastered:'已掌握'}[d.mastery];
+  $('#rvBox').innerHTML=`<div class="rv" onclick="flipReview()">
+    ${state.rvFlipped
+      ? `<div class="back">${esc(d.back)}</div><div class="origin">${esc(d.originText)}</div>`
+      : `<div class="front">${esc(d.front)}</div><div class="hint">点击翻面查看答案</div>`}
+  </div>
+  <div class="rv-nav">
+    <button class="btn sm" onclick="rvPrev()">← 上一张</button>
+    <span class="tag">${state.rvIndex+1} / ${state.reviewDeck.length}</span>
+    <button class="btn sm" onclick="rvNext()">下一张 →</button>
+    <span class="tag">${mLabel}</span>
+    ${state.rvFlipped?`<button class="btn sm" onclick="rvMastery('reviewing')">巩固中</button>
+      <button class="btn sm primary" onclick="rvMastery('mastered')">已掌握</button>`:''}
+  </div>`;
+}
+function flipReview(){state.rvFlipped=!state.rvFlipped;drawReview()}
+function rvPrev(){state.rvIndex=(state.rvIndex-1+state.reviewDeck.length)%state.reviewDeck.length;state.rvFlipped=false;drawReview()}
+function rvNext(){state.rvIndex=(state.rvIndex+1)%state.reviewDeck.length;state.rvFlipped=false;drawReview()}
+async function rvMastery(m){
+  const d=state.reviewDeck[state.rvIndex];
+  try{await api(`/api/cards/${d.cardId}/mastery`,'PATCH',{mastery:m});toast('已更新掌握度');
+    const deck=await api('/api/review');state.reviewDeck=deck;if(state.rvIndex>=deck.length)state.rvIndex=0;
+    state.rvFlipped=false;drawReview();
+  }catch(e){toast(e.message)}
+}
+
+async function doScan(){
+  const btn=event.target;btn.disabled=true;const old=btn.textContent;btn.textContent='同步中…';
+  try{const r=await api('/api/scan','POST');toast(`同步完成：新增 ${r.added} · 更新 ${r.updated}`);await render(state.view)}
+  catch(e){toast(e.message)}finally{btn.disabled=false;btn.textContent=old}
+}
+
+const VIEWS={home:viewHome,library:viewLibrary,write:viewWrite,capture:viewCapture,review:viewReview};
+async function render(view){state.view=view;document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('active',a.dataset.view===view));await VIEWS[view]()}
+$('#nav').addEventListener('click',e=>{const a=e.target.closest('a');if(a)render(a.dataset.view)});
+window.addEventListener('DOMContentLoaded',async()=>{
+  try{await api('/api/health');$('#statusDot').classList.add('on');$('#statusText').textContent='服务已连接'}catch{$('#statusText').textContent='服务未连接'}
+  render('home');
+});
+</script>
+</body>
+</html>

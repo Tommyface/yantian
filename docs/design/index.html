@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>砚田 · 界面设计方案 v2.2</title>
+<style>
+/* ============ 设计令牌 Design Tokens · v2.1 提质版 ============ */
+:root{
+  /* 主色 · 藏青墨蓝（更深沉、更克制、更有质感） */
+  --primary-50:#eef3f9; --primary-100:#dde8f4; --primary-200:#bed1e8;
+  --primary-300:#92b0d6; --primary-400:#5f8ac0;
+  --primary-500:#2c5d96; --primary-600:#244d80; --primary-700:#1c3e69;
+  --primary-800:#163254; --primary-900:#102540;
+  /* 中性 · 带冷蓝灰调的墨色（tinted neutral，非纯灰） */
+  --ink-900:#1b2736; --ink-800:#2b3a4d; --ink-700:#48596e; --ink-600:#63738a;
+  --ink-500:#7c8a9d; --ink-400:#9da9b9; --ink-300:#c2cbd7; --ink-200:#dde3ec; --ink-100:#eef2f7;
+  --bg:#f3f6fa; --surface:#ffffff; --surface-2:#f8fafc; --surface-3:#f1f5f9;
+  --border:#e4eaf1; --border-2:#eef2f7;
+  /* 语义 */
+  --success:#1f8a5e; --success-bg:#e8f5ee;
+  --warning:#b27c28; --warning-bg:#fbf3e4;
+  --danger:#c9443e; --danger-bg:#fbeceb;
+  --info:#2c5d96; --info-bg:#eef3f9;
+  /* 暖金 · 更温润精致（金句 / 精选 / 高光） */
+  --gold:#a87c33; --gold-600:#8f6726; --gold-bg:#faf5ea; --gold-line:#e5d3ac;
+  /* 字体 */
+  --font:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;
+  --font-serif:"Songti SC","Noto Serif SC","Source Han Serif SC","STSong",Georgia,serif;
+  /* 间距 4px 栅格 */
+  --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:20px;--s6:24px;--s8:32px;--s10:40px;--s12:48px;
+  /* 圆角 */
+  --r-sm:6px;--r:10px;--r-lg:14px;--r-xl:20px;
+  /* 阴影 · 更轻、更分层、带冷蓝调 */
+  --sh-1:0 1px 2px rgba(27,39,54,.04),0 1px 3px rgba(27,39,54,.03);
+  --sh-2:0 2px 4px rgba(27,39,54,.03),0 8px 20px rgba(27,39,54,.06);
+  --sh-3:0 4px 8px rgba(27,39,54,.04),0 18px 40px rgba(27,39,54,.10);
+  /* 缓动 · 自然减速，无回弹 */
+  --ease:cubic-bezier(.22,1,.36,1);
+  --t:.2s var(--ease);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:#e9edf3;color:var(--ink-900);line-height:1.6;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+svg{display:block}
+.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+:focus-visible{outline:2px solid var(--primary-500);outline-offset:2px;border-radius:3px}
+
+/* ============ 文档外壳 ============ */
+.doc{max-width:1180px;margin:0 auto;padding:56px 40px 100px}
+.doc-head{margin-bottom:56px;position:relative;padding-left:22px}
+.doc-head::before{content:"";position:absolute;left:0;top:5px;bottom:5px;width:4px;border-radius:4px;
+  background:linear-gradient(180deg,var(--gold),var(--gold-line))}
+.doc-badge{display:inline-block;font-size:11px;font-weight:600;color:var(--gold-600);background:var(--gold-bg);
+  padding:6px 13px;border-radius:20px;letter-spacing:.08em;margin-bottom:20px;border:1px solid var(--gold-line)}
+.doc-head h1{font-family:var(--font-serif);font-size:42px;font-weight:700;letter-spacing:-.01em;line-height:1.32;color:var(--ink-900)}
+.doc-head h1 span{color:var(--primary-600)}
+.doc-head p{font-size:15px;color:var(--ink-500);margin-top:16px;max-width:700px;line-height:1.9}
+.doc-meta{display:flex;gap:36px;margin-top:28px;padding-top:22px;border-top:1px solid var(--border);flex-wrap:wrap}
+.doc-meta div{font-size:11px;color:var(--ink-400);letter-spacing:.03em}
+.doc-meta b{display:block;color:var(--ink-800);font-size:13px;font-weight:600;margin-top:4px;letter-spacing:0}
+.chapter{margin:66px 0 28px;display:flex;align-items:baseline;gap:14px}
+.chapter .no{font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.14em}
+.chapter h2{font-family:var(--font-serif);font-size:27px;font-weight:700;letter-spacing:-.01em}
+.chapter p{font-size:12px;color:var(--ink-400);margin-left:auto}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:28px;box-shadow:var(--sh-1)}
+
+/* 令牌展示 */
+.swatch-row{display:flex;gap:0;flex-wrap:wrap;margin-bottom:22px}
+.swatch{flex:1;min-width:88px;height:76px;position:relative}
+.swatch span{position:absolute;bottom:-22px;left:0;font-size:10px;color:var(--ink-400);white-space:nowrap}
+.token-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:28px 40px;margin-top:36px}
+.token-block h4{font-size:11px;font-weight:700;color:var(--ink-500);margin-bottom:14px;text-transform:uppercase;letter-spacing:.12em}
+.type-scale div{padding:7px 0;border-bottom:1px solid var(--border-2);display:flex;justify-content:space-between;align-items:baseline}
+.type-scale div:last-child{border:0}
+.type-scale small{color:var(--ink-400);font-size:11px}
+.space-scale{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap}
+.space-scale div{text-align:center}
+.space-scale .bar{background:var(--primary-200);border-radius:3px;margin:0 auto 6px}
+.space-scale small{font-size:10px;color:var(--ink-400)}
+.shadow-row{display:flex;gap:20px;flex-wrap:wrap}
+.shadow-row div{width:110px;height:76px;background:#fff;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--ink-400)}
+
+/* 组件展示 */
+.comp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:32px 40px}
+.comp-block h4{font-size:11px;font-weight:700;color:var(--ink-500);margin-bottom:16px;letter-spacing:.1em}
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--border);background:#fff;color:var(--ink-700);
+  padding:9px 17px;border-radius:var(--r-sm);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;
+  transition:var(--t)}
+.btn:hover{border-color:var(--primary-300);color:var(--primary-600);box-shadow:var(--sh-1);transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn.pri{background:var(--primary-600);color:#fff;border-color:var(--primary-600);box-shadow:0 1px 2px rgba(28,62,105,.25)}
+.btn.pri:hover{background:var(--primary-700);border-color:var(--primary-700);color:#fff;box-shadow:0 4px 12px rgba(28,62,105,.28)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.sm{padding:5px 11px;font-size:12px}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:20px;font-size:12px;background:var(--primary-50);color:var(--primary-600);font-weight:500}
+.chip.gold{background:var(--gold-bg);color:var(--gold-600)}
+.chip.gray{background:var(--surface-3);color:var(--ink-500)}
+.chip.green{background:var(--success-bg);color:var(--success)}
+.tag{display:inline-block;padding:2px 9px;border-radius:5px;font-size:11px;background:var(--primary-50);color:var(--primary-600);font-weight:500}
+.tag.gold{background:var(--gold-bg);color:var(--gold-600)}
+.tag.green{background:var(--success-bg);color:var(--success)}
+.tag.amber{background:var(--warning-bg);color:var(--warning)}
+.input{border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 13px;font-size:13px;color:var(--ink-900);background:#fff;font-family:inherit;width:100%;transition:var(--t)}
+.input:focus{outline:none;border-color:var(--primary-400);box-shadow:0 0 0 3px var(--primary-50)}
+.field-lbl{font-size:11px;color:var(--ink-500);font-weight:600;margin-bottom:6px;display:block}
+
+/* ============ 应用窗口 Mockup ============ */
+.mockup-wrap{margin:64px 0}
+.mockup-label{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.mockup-label .n{width:26px;height:26px;border-radius:7px;background:var(--primary-600);color:#fff;font-size:12px;
+  font-weight:700;display:flex;align-items:center;justify-content:center}
+.mockup-label h3{font-family:var(--font-serif);font-size:19px;font-weight:700}
+.mockup-label p{font-size:12px;color:var(--ink-400);margin-left:auto}
+.window{max-width:1180px;margin:0 auto;background:var(--bg);border:1px solid #d9dee6;border-radius:14px;
+  overflow:hidden;box-shadow:var(--sh-3)}
+.win-bar{height:38px;background:#f7f8fa;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 15px;gap:7px}
+.win-dot{width:10px;height:10px;border-radius:50%}
+.win-dot.r{background:#e06a5e}.win-dot.y{background:#e3b341}.win-dot.g{background:#5bb974}
+.win-title{margin:0 auto;font-size:11px;color:var(--ink-400);padding-right:52px}
+.app{display:flex;height:742px}
+
+/* 侧边栏 */
+.side{width:214px;flex:none;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;padding:22px 14px}
+.logo{display:flex;align-items:center;gap:11px;padding:0 10px 26px}
+.logo-mark{width:35px;height:35px;border-radius:10px;background:linear-gradient(145deg,var(--primary-500),var(--primary-800));
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700;font-family:var(--font-serif);
+  box-shadow:0 2px 5px rgba(28,62,105,.25)}
+.logo-txt b{font-family:var(--font-serif);font-size:17px;font-weight:700;letter-spacing:.1em;display:block;line-height:1.2}
+.logo-txt small{font-size:9px;color:var(--ink-400);letter-spacing:.14em}
+.nav{display:flex;flex-direction:column;gap:3px}
+.nav a{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:8px;color:var(--ink-500);
+  text-decoration:none;font-size:13px;font-weight:500;transition:var(--t);position:relative}
+.nav a .ic{width:17px;height:17px}
+.nav a.active{background:var(--primary-50);color:var(--primary-700);font-weight:600}
+.nav a.active::before{content:"";position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:0 3px 3px 0;background:var(--primary-600)}
+.nav a.active .ic{stroke-width:2}
+.nav a:hover:not(.active){background:var(--surface-2);color:var(--ink-700)}
+.nav .sep{height:1px;background:var(--border-2);margin:10px 12px}
+.side-foot{margin-top:auto;padding:12px 10px 0;border-top:1px solid var(--border-2)}
+.sync-status{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--ink-500)}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--success);box-shadow:0 0 0 3px var(--success-bg)}
+.side-foot .mini{font-size:10px;color:var(--ink-400);margin-top:6px}
+
+/* 主区 */
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{height:60px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;
+  padding:0 26px;gap:16px;flex:none}
+.crumb{font-size:13px;color:var(--ink-400)}
+.crumb b{color:var(--ink-800);font-weight:600}
+.top-search{margin-left:auto;width:230px;height:34px;border:1px solid var(--border);border-radius:8px;
+  display:flex;align-items:center;gap:8px;padding:0 12px;color:var(--ink-400);background:var(--surface-2);transition:var(--t)}
+.top-search:hover{border-color:var(--primary-300);background:#fff}
+.top-search .ic{width:15px;height:15px}
+.top-search span{font-size:12px}
+.icon-btn{width:34px;height:34px;border:1px solid var(--border);border-radius:8px;background:#fff;display:flex;
+  align-items:center;justify-content:center;color:var(--ink-500);position:relative;transition:var(--t)}
+.icon-btn:hover{border-color:var(--primary-300);color:var(--primary-600)}
+.icon-btn .ic{width:16px;height:16px}
+.badge-dot{position:absolute;top:6px;right:6px;width:6px;height:6px;background:var(--danger);border-radius:50%;border:1.5px solid #fff}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(145deg,#7b93c4,var(--primary-700));
+  color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;box-shadow:0 1px 3px rgba(28,62,105,.2)}
+.content{flex:1;overflow:hidden;padding:24px 28px}
+.page-title{font-family:var(--font-serif);font-size:23px;font-weight:700;letter-spacing:-.01em;margin-bottom:3px}
+.page-sub{font-size:12px;color:var(--ink-400);margin-bottom:22px}
+
+/* 通用小组件 */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.stat{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;box-shadow:var(--sh-1);
+  position:relative;overflow:hidden;transition:var(--t)}
+.stat:hover{box-shadow:var(--sh-2);transform:translateY(-2px)}
+.stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--primary-400)}
+.stat:nth-child(2)::before{background:var(--success)}
+.stat:nth-child(3)::before{background:var(--warning)}
+.stat:nth-child(4)::before{background:var(--gold)}
+.stat .top{display:flex;align-items:center;justify-content:space-between}
+.stat .lbl{font-size:11px;color:var(--ink-500);font-weight:500}
+.stat .ico{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:var(--primary-50);color:var(--primary-600)}
+.stat:nth-child(2) .ico{background:var(--success-bg);color:var(--success)}
+.stat:nth-child(3) .ico{background:var(--warning-bg);color:var(--warning)}
+.stat:nth-child(4) .ico{background:var(--gold-bg);color:var(--gold)}
+.stat .ico .ic{width:15px;height:15px}
+.stat .num{font-size:29px;font-weight:700;letter-spacing:-.02em;margin-top:6px;font-variant-numeric:tabular-nums;color:var(--ink-900)}
+.stat .delta{font-size:10px;color:var(--ink-400);margin-top:3px}
+.stat .delta b{color:var(--success);font-weight:600}
+.cols{display:grid;gap:16px}
+.card{background:#fff;border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh-1)}
+.card-h{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid var(--border-2)}
+.card-h h4{font-size:13px;font-weight:600}
+.card-h a{font-size:11px;color:var(--primary-600);text-decoration:none}
+.card-h a:hover{text-decoration:underline}
+.card-b{padding:16px 18px}
+.more{font-size:11px;color:var(--ink-400)}
+
+/* 今日 · Hero（重做为精致"每日简报卡"） */
+.hero{background:linear-gradient(115deg,var(--primary-800),var(--primary-600) 62%,var(--primary-700));border-radius:var(--r-lg);
+  padding:22px 26px;color:#fff;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;
+  position:relative;overflow:hidden;box-shadow:0 4px 14px rgba(22,50,84,.18)}
+.hero::before{content:"";position:absolute;inset:0;opacity:.5;
+  background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);
+  background-size:26px 26px;mask-image:linear-gradient(90deg,transparent,#000 70%)}
+.hero::after{content:"";position:absolute;right:-40px;top:-70px;width:240px;height:240px;border-radius:50%;
+  background:radial-gradient(circle,rgba(229,211,172,.22),transparent 68%)}
+.hero h3{font-family:var(--font-serif);font-size:19px;font-weight:600;letter-spacing:.02em;position:relative;z-index:1}
+.hero p{font-size:12px;opacity:.78;margin-top:7px;position:relative;z-index:1}
+.hero .day{text-align:right;position:relative;z-index:1;padding-left:20px}
+.hero .day b{font-family:var(--font-serif);font-size:38px;font-weight:700;display:block;line-height:1;color:var(--gold-line);font-variant-numeric:tabular-nums}
+.hero .day span{font-size:10px;opacity:.75;letter-spacing:.06em}
+.hero-actions{display:flex;gap:9px;margin-top:18px;position:relative;z-index:1}
+.hero-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#fff;
+  padding:7px 14px;border-radius:7px;font-size:12px;display:flex;align-items:center;gap:7px;font-weight:500;transition:var(--t)}
+.hero-btn:hover{background:rgba(255,255,255,.2);transform:translateY(-1px)}
+.hero-btn.pri{background:#fff;color:var(--primary-700);border-color:#fff}
+.hero-btn.pri:hover{background:var(--gold-bg);border-color:var(--gold-bg);color:var(--gold-600)}
+.hero-btn .ic{width:14px;height:14px}
+.today-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:16px}
+/* 趋势图：加横向网格基线 */
+.bars{display:flex;align-items:flex-end;gap:9px;height:96px;padding-top:14px;position:relative}
+.bars::before{content:"";position:absolute;left:0;right:0;top:14px;bottom:20px;
+  background:repeating-linear-gradient(to top,transparent 0,transparent calc(25% - 1px),var(--border-2) calc(25% - 1px),var(--border-2) 25%);
+  pointer-events:none}
+.bar-col{flex:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:7px;position:relative;z-index:1}
+.bar-col .v{width:100%;max-width:26px;background:linear-gradient(180deg,var(--primary-300),var(--primary-600));
+  border-radius:5px 5px 0 0;position:relative;flex:none}
+.bar-col .v.today{background:linear-gradient(180deg,var(--gold-line),var(--gold-600))}
+.bar-col small{font-size:9px;color:var(--ink-400)}
+.feed-item{display:flex;gap:11px;padding:11px 0;border-bottom:1px solid var(--border-2)}
+.feed-item:last-child{border:0}
+.feed-mark{width:7px;height:7px;border-radius:50%;background:var(--primary-300);margin-top:7px;flex:none}
+.feed-mark.g{background:var(--gold)}
+.feed-body{min-width:0}
+.feed-body p{font-size:12px;line-height:1.6;color:var(--ink-700);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.feed-meta{font-size:10px;color:var(--ink-400);margin-top:4px;display:flex;gap:8px;align-items:center}
+
+/* 素材库 */
+.lib-toolbar{display:flex;gap:10px;align-items:center;margin-bottom:16px}
+.lib-search{flex:1;height:38px;border:1px solid var(--border);border-radius:8px;background:#fff;display:flex;
+  align-items:center;gap:9px;padding:0 13px;color:var(--ink-400);transition:var(--t)}
+.lib-search:hover{border-color:var(--primary-300)}
+.lib-search .ic{width:16px;height:16px}
+.lib-search span{font-size:13px}
+.filter-chips{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap}
+.filter-chips .chip{cursor:pointer;border:1px solid transparent;transition:var(--t)}
+.filter-chips .chip:hover{border-color:var(--primary-200)}
+.filter-chips .chip.on{background:var(--primary-600);color:#fff}
+.lib-layout{display:grid;grid-template-columns:180px 1fr 262px;gap:14px;height:558px}
+.topic-tree{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px;overflow:hidden}
+.topic-tree h5{font-size:10px;color:var(--ink-400);letter-spacing:.1em;margin-bottom:10px;font-weight:700}
+.topic-tree a{display:flex;justify-content:space-between;padding:7px 9px;border-radius:6px;font-size:12px;
+  color:var(--ink-500);text-decoration:none;margin-bottom:2px;transition:var(--t)}
+.topic-tree a.on{background:var(--primary-50);color:var(--primary-700);font-weight:600}
+.topic-tree a:hover:not(.on){background:var(--surface-2)}
+.topic-tree a span{color:var(--ink-300);font-size:11px}
+.mat-list{display:flex;flex-direction:column;gap:10px;overflow:hidden}
+.mat{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--sh-1);transition:var(--t)}
+.mat:hover{box-shadow:var(--sh-2)}
+.mat.sel{border-color:var(--primary-300);box-shadow:0 0 0 2px var(--primary-50)}
+.mat-top{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.mat-q{font-family:var(--font-serif);font-size:13.5px;line-height:1.75;color:var(--ink-900)}
+.mat-foot{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:10px;color:var(--ink-400)}
+.mat-foot a{color:var(--primary-600);text-decoration:none;margin-left:auto}
+.detail{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:18px;overflow:hidden}
+.detail h5{font-size:13px;font-weight:600;margin-bottom:14px}
+.detail .q{font-family:var(--font-serif);font-size:14px;line-height:1.85;padding:14px;background:var(--gold-bg);
+  border-left:3px solid var(--gold);border-radius:0 8px 8px 0;color:var(--ink-900)}
+.detail .row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border-2);font-size:11px}
+.detail .row span{color:var(--ink-400)}
+.detail .row b{color:var(--ink-700);font-weight:500;text-align:right;max-width:60%}
+.verify{display:flex;align-items:center;gap:6px;background:var(--success-bg);color:var(--success);
+  padding:8px 11px;border-radius:7px;font-size:11px;margin-top:14px;font-weight:500}
+.verify .ic{width:14px;height:14px}
+
+/* 写作台 */
+.write-layout{display:grid;grid-template-columns:250px 1fr 240px;gap:14px;height:560px}
+.topic-tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.topic-tab{padding:7px 15px;border:1px solid var(--border);border-radius:20px;background:#fff;font-size:12px;
+  color:var(--ink-500);cursor:pointer;font-weight:500;transition:var(--t)}
+.topic-tab:hover{border-color:var(--primary-300);color:var(--primary-600)}
+.topic-tab.on{background:var(--primary-600);color:#fff;border-color:var(--primary-600)}
+.pack{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px;overflow:hidden}
+.pack h5{font-size:10px;color:var(--ink-400);letter-spacing:.1em;margin:12px 0 8px;font-weight:700}
+.pack h5:first-child{margin-top:0}
+.pick{display:flex;gap:8px;padding:9px;border:1px solid var(--border-2);border-radius:7px;margin-bottom:7px;cursor:pointer;transition:var(--t)}
+.pick:hover{border-color:var(--primary-200);background:var(--surface-2)}
+.pick.on{border-color:var(--primary-200);background:var(--primary-50)}
+.cbox{width:15px;height:15px;border:1.5px solid var(--ink-300);border-radius:4px;flex:none;margin-top:2px;display:flex;align-items:center;justify-content:center}
+.pick.on .cbox{background:var(--primary-600);border-color:var(--primary-600)}
+.pick.on .cbox::after{content:"";width:7px;height:4px;border-left:1.5px solid #fff;border-bottom:1.5px solid #fff;transform:rotate(-45deg) translateY(-1px)}
+.pick p{font-size:11px;line-height:1.6;color:var(--ink-700);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.editor{background:#fff;border:1px solid var(--border);border-radius:var(--r);display:flex;flex-direction:column;overflow:hidden}
+.editor-h{padding:12px 16px;border-bottom:1px solid var(--border-2);display:flex;align-items:center;gap:8px}
+.editor-h input{border:0;outline:0;font-size:15px;font-weight:600;flex:1;color:var(--ink-900);font-family:var(--font-serif)}
+.editor-tools{display:flex;gap:14px;padding:9px 16px;border-bottom:1px solid var(--border-2);color:var(--ink-400)}
+.editor-tools span{font-size:12px}
+.editor-body{padding:18px 22px;flex:1;font-size:13px;line-height:2.1;color:var(--ink-700);font-family:var(--font-serif)}
+.editor-body .ph{color:var(--ink-300)}
+.editor-body .ins{background:linear-gradient(transparent 62%,var(--gold-bg) 62%);color:var(--ink-900)}
+.cursor{display:inline-block;width:1.5px;height:15px;background:var(--primary-600);vertical-align:-2px;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.selected{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px;overflow:hidden}
+.selected h5{font-size:11px;font-weight:600;margin-bottom:4px}
+.selected .n{font-size:10px;color:var(--ink-400);margin-bottom:12px}
+.sel-item{padding:9px 10px;background:var(--surface-2);border:1px solid var(--border-2);border-radius:7px;margin-bottom:8px}
+.sel-item p{font-size:11px;line-height:1.6;color:var(--ink-700);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sel-item .src{font-size:9px;color:var(--ink-400);margin-top:5px}
+.copy-btn{width:100%;padding:10px;background:var(--primary-600);color:#fff;border:0;border-radius:8px;font-size:12px;
+  font-weight:600;display:flex;align-items:center;justify-content:center;gap:7px;margin-top:10px;font-family:inherit;
+  box-shadow:0 1px 2px rgba(28,62,105,.25);transition:var(--t)}
+.copy-btn:hover{background:var(--primary-700);transform:translateY(-1px);box-shadow:0 4px 12px rgba(28,62,105,.28)}
+.copy-btn .ic{width:14px;height:14px}
+
+/* 采集 */
+.cap-tabs{display:flex;gap:20px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.cap-tab{padding:0 2px 11px;font-size:13px;color:var(--ink-400);border-bottom:2px solid transparent;font-weight:500;transition:var(--t)}
+.cap-tab:hover{color:var(--ink-700)}
+.cap-tab.on{color:var(--primary-700);border-color:var(--primary-600);font-weight:600}
+.cap-layout{display:grid;grid-template-columns:1fr 1.25fr;gap:16px;height:560px}
+.note{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;margin-bottom:9px;box-shadow:var(--sh-1);transition:var(--t)}
+.note:hover{box-shadow:var(--sh-2)}
+.note.on{border-color:var(--primary-300);box-shadow:0 0 0 2px var(--primary-50)}
+.note h5{font-size:13px;font-weight:600;margin-bottom:6px}
+.note .m{font-size:10px;color:var(--ink-400);display:flex;gap:8px;align-items:center}
+.note .act{margin-left:auto;font-size:11px;color:var(--primary-600);cursor:pointer;font-weight:500}
+.cand-panel{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:18px;overflow:hidden}
+.cand-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.cand-head h4{font-size:13px;font-weight:600}
+.ai-badge{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--primary-700);background:var(--primary-50);padding:4px 10px;border-radius:20px}
+.ai-badge .ic{width:13px;height:13px}
+.cand{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid var(--border-2);align-items:flex-start}
+.cand:last-child{border:0}
+.cand-body{flex:1;min-width:0}
+.cand-q{font-family:var(--font-serif);font-size:12.5px;line-height:1.7;color:var(--ink-900)}
+.cand-meta{display:flex;gap:7px;align-items:center;margin-top:7px;font-size:10px;color:var(--ink-400)}
+.conf{font-variant-numeric:tabular-nums;color:var(--ink-500)}
+.cand-btn{padding:5px 12px;border:1px solid var(--primary-500);color:var(--primary-600);background:#fff;
+  border-radius:6px;font-size:11px;cursor:pointer;font-weight:500;flex:none;font-family:inherit;transition:var(--t)}
+.cand-btn:hover{background:var(--primary-50)}
+.cand-btn.done{border-color:var(--success);color:var(--success);background:var(--success-bg)}
+
+/* 复习 */
+.review-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%}
+.rv-progress{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.rv-progress .track{width:180px;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.rv-progress .fill{height:100%;background:linear-gradient(90deg,var(--primary-500),var(--primary-700));border-radius:3px;width:25%}
+.rv-progress span{font-size:11px;color:var(--ink-400);font-variant-numeric:tabular-nums}
+.flash{width:100%;max-width:460px;height:290px;background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);
+  box-shadow:var(--sh-2);padding:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  position:relative}
+.flash::before{content:"";position:absolute;left:22px;top:22px;width:22px;height:22px;border-left:2px solid var(--gold-line);border-top:2px solid var(--gold-line);border-radius:3px 0 0 0}
+.flash::after{content:"";position:absolute;right:22px;bottom:22px;width:22px;height:22px;border-right:2px solid var(--gold-line);border-bottom:2px solid var(--gold-line);border-radius:0 0 3px 0}
+.flash .face-tag{font-size:10px;color:var(--gold);letter-spacing:.14em;margin-bottom:18px;font-weight:600}
+.flash .front-q{font-size:20px;color:var(--ink-700);font-weight:500;font-family:var(--font-serif)}
+.flash .back-q{font-family:var(--font-serif);font-size:17px;line-height:1.9;color:var(--ink-900)}
+.flash .back-src{font-size:10px;color:var(--ink-400);margin-top:16px;padding-top:14px;border-top:1px solid var(--border-2);width:100%}
+.flash .hint{font-size:10px;color:var(--ink-300);margin-top:20px}
+.rv-actions{display:flex;gap:10px;margin-top:18px}
+.rv-btn{padding:9px 20px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:12px;
+  color:var(--ink-600);cursor:pointer;font-family:inherit;font-weight:500;transition:var(--t)}
+.rv-btn:hover{transform:translateY(-1px);box-shadow:var(--sh-1)}
+.rv-btn.good{border-color:var(--success);color:var(--success)}
+.rv-btn.best{background:var(--primary-600);color:#fff;border-color:var(--primary-600);box-shadow:0 1px 2px rgba(28,62,105,.25)}
+.rv-btn.best:hover{background:var(--primary-700)}
+.rv-dots{display:flex;gap:5px;margin-top:20px}
+.rv-dots i{width:6px;height:6px;border-radius:50%;background:var(--border)}
+.rv-dots i.done{background:var(--primary-200)}
+.rv-dots i.cur{background:var(--primary-600);width:18px;border-radius:3px}
+
+/* 截图模式：只显示目标界面 */
+body.shot-mode{background:var(--bg)}
+/* mockup-wrap 嵌套在 .doc 内：隐藏 doc 中除 mockup 外的兄弟元素；整体隐藏无 mockup 的 doc */
+body.shot-mode .doc:not(:has(.mockup-wrap)){display:none!important}
+body.shot-mode .doc > *:not(.mockup-wrap){display:none!important}
+body.shot-mode .mockup-wrap{display:none;margin:0}
+body.shot-mode .mockup-wrap.target{display:block!important;margin:0;max-width:none}
+body.shot-mode .mockup-wrap.target .window{border:0;border-radius:0;box-shadow:none;max-width:none}
+body.shot-mode .app{height:760px}
+body.shot-mode .win-bar{display:none}
+
+/* ============ 移动端适配 Mobile · v2.1 ============
+   设计原则：单列流式布局 / 底部标签导航 / 44px 触摸目标 /
+   拇指区优先 / 渐进披露 / 与桌面端共用设计令牌保持品牌一致 */
+.mobile-section{padding-top:8px}
+.mobile-intro{background:linear-gradient(135deg,var(--primary-800),var(--primary-600));border-radius:var(--r-lg);
+  padding:26px 30px;color:#fff;margin-bottom:36px;position:relative;overflow:hidden}
+.mobile-intro::after{content:"";position:absolute;right:-30px;bottom:-60px;width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(229,211,172,.2),transparent 70%)}
+.mobile-intro h3{font-family:var(--font-serif);font-size:22px;font-weight:700;position:relative;z-index:1}
+.mobile-intro p{font-size:13px;opacity:.82;margin-top:10px;line-height:1.8;max-width:640px;position:relative;z-index:1}
+.mobile-intro .mkeys{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;position:relative;z-index:1}
+.mobile-intro .mkeys span{font-size:11px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);
+  padding:5px 12px;border-radius:20px}
+
+/* 手机墙：五台并排 */
+.phone-wall{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin:8px 0 20px}
+
+/* 手机外框 */
+.phone{width:300px;height:620px;background:#0d1117;border-radius:42px;padding:9px;flex:none;
+  box-shadow:0 2px 4px rgba(16,37,64,.2),0 24px 50px rgba(16,37,64,.22),inset 0 0 0 1px rgba(255,255,255,.08);
+  position:relative}
+.phone::before{content:"";position:absolute;right:-2px;top:150px;width:3px;height:56px;background:#2a3140;border-radius:0 3px 3px 0}
+.m-screen{width:100%;height:100%;background:var(--bg);border-radius:34px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+
+/* 状态栏 */
+.m-status{height:38px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 20px 0 24px;
+  font-size:11px;font-weight:600;color:var(--ink-900);position:relative;background:#fff}
+.m-status .m-time{font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.m-island{position:absolute;left:50%;top:8px;transform:translateX(-50%);width:74px;height:20px;background:#0d1117;border-radius:12px}
+.m-sysicons{display:flex;align-items:center;gap:5px}
+.m-sysicons svg{width:14px;height:11px;stroke:var(--ink-900);fill:none;stroke-width:1.6}
+
+/* 顶部应用栏 */
+.m-appbar{height:50px;flex:none;background:#fff;border-bottom:1px solid var(--border-2);display:flex;align-items:center;
+  padding:0 16px;gap:10px}
+.m-appbar h2{font-family:var(--font-serif);font-size:17px;font-weight:700}
+.m-appbar .m-sub{font-size:10px;color:var(--ink-400);margin-left:1px}
+.m-appbar .m-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.m-ibtn{width:30px;height:30px;border-radius:9px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;color:var(--ink-500)}
+.m-ibtn .ic{width:15px;height:15px}
+.m-av{width:28px;height:28px;border-radius:50%;background:linear-gradient(145deg,#7b93c4,var(--primary-700));color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
+
+/* 内容滚动区 */
+.m-body{flex:1;overflow:hidden;padding:14px 16px 10px}
+.m-sec{margin-bottom:14px}
+.m-sech{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.m-sech h4{font-size:12px;font-weight:700}
+.m-sech a{font-size:10px;color:var(--primary-600);text-decoration:none}
+
+/* 底部标签栏 */
+.m-tabs{height:58px;flex:none;background:#fff;border-top:1px solid var(--border);display:flex;align-items:center;padding:0 4px}
+.m-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--ink-400);position:relative;height:100%}
+.m-tab .ic{width:19px;height:19px}
+.m-tab span{font-size:9px;font-weight:500}
+.m-tab.on{color:var(--primary-600)}
+.m-tab.on .ic{stroke-width:2.1}
+.m-tab.on::before{content:"";position:absolute;top:0;width:20px;height:2.5px;background:var(--primary-600);border-radius:0 0 3px 3px}
+.m-home-ind{height:14px;flex:none;background:#fff;display:flex;align-items:center;justify-content:center}
+.m-home-ind i{width:96px;height:4px;border-radius:3px;background:#1b2736;display:block}
+
+/* ---- M 今日 ---- */
+.m-hero{background:linear-gradient(120deg,var(--primary-800),var(--primary-600));border-radius:14px;padding:14px 16px;
+  color:#fff;margin-bottom:14px;position:relative;overflow:hidden;display:flex;flex-direction:column}
+.m-hero::before{content:"";position:absolute;inset:0;opacity:.4;background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);background-size:20px 20px}
+.m-hero::after{content:"";position:absolute;right:-20px;top:-40px;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle,rgba(229,211,172,.22),transparent 68%)}
+.m-hero .m-hero-top{display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
+.m-hero h3{font-family:var(--font-serif);font-size:14px;font-weight:600;position:relative;z-index:1;white-space:nowrap}
+.m-hero p{font-size:9.5px;opacity:.8;margin-top:5px;position:relative;z-index:1;line-height:1.5}
+.m-hero .m-day{text-align:center;position:relative;z-index:1;padding-left:12px;flex:none}
+.m-hero .m-day b{font-family:var(--font-serif);font-size:30px;color:var(--gold-line);display:block;line-height:1;font-variant-numeric:tabular-nums}
+.m-hero .m-day span{font-size:8px;opacity:.75;letter-spacing:.06em;white-space:nowrap}
+.m-quick{display:flex;gap:7px;margin-top:13px;position:relative;z-index:1;width:100%}
+.m-quick button{flex:1;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;
+  padding:7px 3px;font-size:9px;font-family:inherit;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;white-space:nowrap}
+.m-quick button.pri{background:#fff;color:var(--primary-700);border-color:#fff}
+.m-quick .ic{width:13px;height:13px}
+.m-stat2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.m-stat{background:#fff;border:1px solid var(--border);border-radius:11px;padding:11px 12px;position:relative;overflow:hidden}
+.m-stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2.5px;background:var(--primary-400)}
+.m-stat:nth-child(2)::before{background:var(--success)}
+.m-stat:nth-child(3)::before{background:var(--warning)}
+.m-stat:nth-child(4)::before{background:var(--gold)}
+.m-stat .m-lbl{font-size:9.5px;color:var(--ink-500)}
+.m-stat .m-num{font-size:22px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums;line-height:1.1}
+.m-stat .m-delta{font-size:8.5px;color:var(--ink-400);margin-top:2px}
+.m-stat .m-delta b{color:var(--success)}
+.m-card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.m-card-h{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border-bottom:1px solid var(--border-2)}
+.m-card-h h4{font-size:11.5px;font-weight:700}
+.m-card-h a{font-size:9.5px;color:var(--primary-600);text-decoration:none}
+.m-card-b{padding:11px 13px}
+.m-bars{display:flex;align-items:flex-end;gap:6px;height:66px;position:relative}
+.m-bars::before{content:"";position:absolute;left:0;right:0;top:0;bottom:15px;background:repeating-linear-gradient(to top,transparent 0,transparent calc(33% - 1px),var(--border-2) calc(33% - 1px),var(--border-2) 33%);pointer-events:none}
+.m-bcol{flex:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;position:relative;z-index:1}
+.m-bcol .v{width:100%;max-width:16px;background:linear-gradient(180deg,var(--primary-300),var(--primary-600));border-radius:4px 4px 0 0;flex:none}
+.m-bcol .v.today{background:linear-gradient(180deg,var(--gold-line),var(--gold-600))}
+.m-bcol small{font-size:8px;color:var(--ink-400)}
+.m-feed{display:flex;gap:9px;padding:8px 0;border-bottom:1px solid var(--border-2)}
+.m-feed:last-child{border:0;padding-bottom:0}
+.m-feed .mk{width:6px;height:6px;border-radius:50%;background:var(--primary-300);margin-top:6px;flex:none}
+.m-feed .mk.g{background:var(--gold)}
+.m-feed p{font-size:10.5px;line-height:1.5;color:var(--ink-700);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.m-feed .meta{font-size:8.5px;color:var(--ink-400);margin-top:3px;display:flex;gap:7px}
+
+/* ---- M 素材库 ---- */
+.m-search{height:36px;border:1px solid var(--border);border-radius:9px;background:#fff;display:flex;align-items:center;gap:8px;
+  padding:0 12px;color:var(--ink-400);margin-bottom:10px}
+.m-search .ic{width:15px;height:15px}
+.m-search span{font-size:11px}
+.m-chips{display:flex;gap:6px;overflow:hidden;margin-bottom:11px}
+.m-chip{padding:5px 11px;border-radius:16px;font-size:9.5px;background:#fff;color:var(--ink-500);border:1px solid var(--border);white-space:nowrap;font-weight:500}
+.m-chip.on{background:var(--primary-600);color:#fff;border-color:var(--primary-600)}
+.m-chip.gold{background:var(--gold-bg);color:var(--gold-600);border-color:transparent}
+.m-mat{background:#fff;border:1px solid var(--border);border-radius:11px;padding:11px 12px;margin-bottom:9px}
+.m-mat.on{border-color:var(--primary-300);box-shadow:0 0 0 2px var(--primary-50)}
+.m-mat .tags{display:flex;gap:5px;margin-bottom:7px}
+.m-tag{font-size:8px;padding:2px 7px;border-radius:4px;background:var(--primary-50);color:var(--primary-600);font-weight:600}
+.m-tag.gold{background:var(--gold-bg);color:var(--gold-600)}
+.m-tag.green{background:var(--success-bg);color:var(--success)}
+.m-tag.amber{background:var(--warning-bg);color:var(--warning)}
+.m-mat .q{font-family:var(--font-serif);font-size:11.5px;line-height:1.65;color:var(--ink-900)}
+.m-mat .foot{display:flex;align-items:center;gap:7px;margin-top:8px;font-size:8.5px;color:var(--ink-400)}
+.m-mat .foot a{color:var(--primary-600);text-decoration:none;margin-left:auto}
+.m-detail-h{position:relative}
+.m-quote{font-family:var(--font-serif);font-size:12px;line-height:1.75;padding:11px;background:var(--gold-bg);
+  border-left:3px solid var(--gold);border-radius:0 8px 8px 0;color:var(--ink-900);margin-bottom:10px}
+.m-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border-2);font-size:9.5px}
+.m-row span{color:var(--ink-400)}
+.m-row b{color:var(--ink-700);font-weight:500}
+.m-verify{display:flex;align-items:center;gap:5px;background:var(--success-bg);color:var(--success);padding:7px 10px;border-radius:7px;
+  font-size:9.5px;margin-top:11px;font-weight:600}
+.m-verify .ic{width:12px;height:12px}
+
+/* ---- M 写作台 ---- */
+.m-topic{display:flex;gap:6px;overflow:hidden;margin-bottom:12px}
+.m-topic span{padding:6px 13px;border:1px solid var(--border);border-radius:16px;background:#fff;font-size:10px;color:var(--ink-500);white-space:nowrap;font-weight:500}
+.m-topic span.on{background:var(--primary-600);color:#fff;border-color:var(--primary-600)}
+.m-write-tabs{display:flex;gap:16px;border-bottom:1px solid var(--border);margin-bottom:11px}
+.m-write-tab{font-size:11px;color:var(--ink-400);padding-bottom:8px;border-bottom:2px solid transparent;font-weight:500}
+.m-write-tab.on{color:var(--primary-700);border-color:var(--primary-600);font-weight:600}
+.m-pick{display:flex;gap:8px;padding:9px 10px;border:1px solid var(--border-2);border-radius:8px;margin-bottom:7px}
+.m-pick.on{border-color:var(--primary-200);background:var(--primary-50)}
+.m-cbox{width:15px;height:15px;border:1.5px solid var(--ink-300);border-radius:4px;flex:none;margin-top:1px;display:flex;align-items:center;justify-content:center}
+.m-pick.on .m-cbox{background:var(--primary-600);border-color:var(--primary-600)}
+.m-pick.on .m-cbox::after{content:"";width:7px;height:4px;border-left:1.5px solid #fff;border-bottom:1.5px solid #fff;transform:rotate(-45deg) translateY(-1px)}
+.m-pick p{font-size:10px;line-height:1.55;color:var(--ink-700);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.m-subh{font-size:9px;color:var(--ink-400);letter-spacing:.08em;margin:10px 0 7px;font-weight:700}
+.m-editor{background:#fff;border:1px solid var(--border);border-radius:11px;overflow:hidden}
+.m-editor .eh{padding:10px 12px;border-bottom:1px solid var(--border-2)}
+.m-editor .eh input{border:0;outline:0;font-size:12px;font-weight:700;width:100%;font-family:var(--font-serif);color:var(--ink-900)}
+.m-editor .et{display:flex;gap:12px;padding:7px 12px;border-bottom:1px solid var(--border-2);color:var(--ink-400)}
+.m-editor .et span{font-size:9px}
+.m-editor .et span.on{color:var(--primary-600);font-weight:600}
+.m-editor .eb{padding:12px;font-size:10px;line-height:2;color:var(--ink-700);font-family:var(--font-serif);min-height:96px}
+.m-editor .eb .ins{background:linear-gradient(transparent 62%,var(--gold-bg) 62%);color:var(--ink-900)}
+.m-editor .eb .ph{color:var(--ink-300)}
+.m-cursor{display:inline-block;width:1px;height:12px;background:var(--primary-600);vertical-align:-1px;animation:blink 1s steps(2) infinite}
+.m-copy{width:100%;padding:10px;background:var(--primary-600);color:#fff;border:0;border-radius:9px;font-size:10.5px;font-weight:600;
+  display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit;margin-top:10px}
+.m-copy .ic{width:13px;height:13px}
+
+/* ---- M 采集 ---- */
+.m-cap-tabs{display:flex;gap:16px;border-bottom:1px solid var(--border);margin-bottom:11px}
+.m-cap-tab{font-size:10.5px;color:var(--ink-400);padding-bottom:8px;border-bottom:2px solid transparent;font-weight:500}
+.m-cap-tab.on{color:var(--primary-700);border-color:var(--primary-600);font-weight:600}
+.m-note{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.m-note.on{border-color:var(--primary-300);box-shadow:0 0 0 2px var(--primary-50)}
+.m-note h5{font-size:11px;font-weight:600;margin-bottom:5px}
+.m-note .m{font-size:8.5px;color:var(--ink-400);display:flex;gap:6px;align-items:center}
+.m-note .act{margin-left:auto;color:var(--primary-600);font-weight:600}
+.m-ai-badge{display:inline-flex;align-items:center;gap:4px;font-size:8px;color:var(--primary-700);background:var(--primary-50);padding:3px 8px;border-radius:12px;font-weight:600}
+.m-ai-badge .ic{width:10px;height:10px}
+.m-cand{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.m-cand .q{font-family:var(--font-serif);font-size:10.5px;line-height:1.6;color:var(--ink-900)}
+.m-cand .meta{display:flex;gap:5px;align-items:center;margin-top:7px;flex-wrap:wrap}
+.m-cand .conf{font-size:8px;color:var(--ink-400);font-variant-numeric:tabular-nums;margin-left:auto}
+.m-cand .btn{width:100%;padding:7px;border:1px solid var(--primary-500);color:var(--primary-600);background:#fff;border-radius:7px;
+  font-size:9.5px;font-weight:600;margin-top:8px;font-family:inherit}
+.m-cand .btn.done{border-color:var(--border);color:var(--ink-400);background:var(--surface-3)}
+
+/* ---- M 复习 ---- */
+.m-rev{display:flex;flex-direction:column;align-items:center;height:100%;padding-top:6px}
+.m-rprog{display:flex;align-items:center;gap:9px;margin-bottom:22px;width:100%}
+.m-rprog span{font-size:9px;color:var(--ink-400);white-space:nowrap}
+.m-rprog .track{flex:1;height:4px;background:var(--border);border-radius:3px;overflow:hidden}
+.m-rprog .fill{height:100%;width:25%;background:linear-gradient(90deg,var(--primary-500),var(--primary-700));border-radius:3px}
+.m-flash{width:100%;height:250px;background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:var(--sh-2);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;position:relative}
+.m-flash::before{content:"";position:absolute;left:18px;top:18px;width:18px;height:18px;border-left:2px solid var(--gold-line);border-top:2px solid var(--gold-line);border-radius:3px 0 0 0}
+.m-flash::after{content:"";position:absolute;right:18px;bottom:18px;width:18px;height:18px;border-right:2px solid var(--gold-line);border-bottom:2px solid var(--gold-line);border-radius:0 0 3px 0}
+.m-flash .tag{font-size:9px;color:var(--gold);letter-spacing:.12em;margin-bottom:16px;font-weight:700}
+.m-flash .q{font-family:var(--font-serif);font-size:16px;line-height:1.7;color:var(--ink-900);font-weight:600}
+.m-flash .hint{font-size:8.5px;color:var(--ink-300);margin-top:20px}
+.m-rbtns{display:flex;gap:7px;margin-top:20px;width:100%}
+.m-rbtn{flex:1;padding:10px 4px;border:1px solid var(--border);border-radius:9px;background:#fff;font-size:9.5px;color:var(--ink-600);
+  font-family:inherit;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px}
+.m-rbtn .ic{width:14px;height:14px}
+.m-rbtn.good{border-color:var(--success);color:var(--success)}
+.m-rbtn.best{background:var(--primary-600);color:#fff;border-color:var(--primary-600)}
+.m-rdots{display:flex;gap:4px;margin-top:18px}
+.m-rdots i{width:5px;height:5px;border-radius:50%;background:var(--border)}
+.m-rdots i.done{background:var(--primary-200)}
+.m-rdots i.cur{background:var(--primary-600);width:14px;border-radius:3px}
+
+</style>
+</head>
+<body>
+
+<!-- ============ 文档首页 ============ -->
+<div class="doc">
+  <div class="doc-head">
+    <span class="doc-badge">YANTIAN · UI DESIGN SYSTEM v2.2</span>
+    <h1>砚田 · 全新界面设计<span>方案</span></h1>
+    <p>为遴选写作素材知识库打造的现代简约专业界面。以「墨蓝为主、暖金点缀、留白分层」为视觉主轴，围绕「采集 → 沉淀 → 调取 → 内化」的核心闭环，让每一处设计都服务于考场生产力。</p>
+    <div class="doc-meta">
+      <div>设计风格<b>现代简约 · 专业</b></div>
+      <div>主色<b>墨蓝 #2F5AA8</b></div>
+      <div>形态<b>桌面工作台 + 移动适配</b></div>
+      <div>无障碍<b>WCAG AA 合规</b></div>
+      <div>版本<b>v2.2 · 2026.11 · 含移动端</b></div>
+    </div>
+  </div>
+
+  <!-- 设计令牌 -->
+  <div class="chapter"><span class="no">01</span><h2>设计令牌</h2><p>Design Tokens · 一切视觉的基础</p></div>
+  <div class="panel">
+    <h4 style="font-size:12px;color:var(--ink-500);margin-bottom:12px;letter-spacing:.06em">色彩系统 · 墨蓝主色 + 暖金点缀</h4>
+    <div class="swatch-row">
+      <div class="swatch" style="background:#1f3e7a"><span>primary-700</span></div>
+      <div class="swatch" style="background:#274c92"><span>primary-600</span></div>
+      <div class="swatch" style="background:#2f5aa8"><span>primary-500</span></div>
+      <div class="swatch" style="background:#bccff0"><span>primary-200</span></div>
+      <div class="swatch" style="background:#eef3fb"><span>primary-50</span></div>
+      <div class="swatch" style="background:#16203a"><span>ink-900</span></div>
+      <div class="swatch" style="background:#6b7688"><span>ink-500</span></div>
+      <div class="swatch" style="background:#c3cad6"><span>ink-300</span></div>
+      <div class="swatch" style="background:#e6eaf0"><span>border</span></div>
+      <div class="swatch" style="background:#b8863b"><span>gold</span></div>
+    </div>
+    <div style="height:20px"></div>
+    <div class="token-grid">
+      <div class="token-block">
+        <h4>字体层级 Typography</h4>
+        <div class="type-scale">
+          <div><span style="font-size:28px;font-weight:700">页面标题</span><small>28 / 700</small></div>
+          <div><span style="font-size:21px;font-weight:700">区块标题</span><small>21 / 700</small></div>
+          <div><span style="font-size:15px;font-weight:600">卡片标题</span><small>15 / 600</small></div>
+          <div><span style="font-size:13px">正文 · 界面文字</span><small>13 / 400</small></div>
+          <div><span style="font-size:11px;color:var(--ink-500)">辅助信息 / 元信息</span><small>11 / 400</small></div>
+          <div><span style="font-size:14px;font-family:var(--font-serif)">金句正文 · 宋体</span><small>serif</small></div>
+        </div>
+      </div>
+      <div class="token-block">
+        <h4>间距 Spacing · 4px 栅格</h4>
+        <div class="space-scale">
+          <div><div class="bar" style="width:4px;height:4px"></div><small>4</small></div>
+          <div><div class="bar" style="width:8px;height:8px"></div><small>8</small></div>
+          <div><div class="bar" style="width:12px;height:12px"></div><small>12</small></div>
+          <div><div class="bar" style="width:16px;height:16px"></div><small>16</small></div>
+          <div><div class="bar" style="width:20px;height:20px"></div><small>20</small></div>
+          <div><div class="bar" style="width:24px;height:24px"></div><small>24</small></div>
+          <div><div class="bar" style="width:32px;height:32px"></div><small>32</small></div>
+        </div>
+        <h4 style="margin-top:28px">圆角 Radius</h4>
+        <div style="display:flex;gap:14px;align-items:center;margin-top:10px">
+          <div style="width:54px;height:44px;background:var(--primary-50);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--primary-600)">6</div>
+          <div style="width:54px;height:44px;background:var(--primary-100);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--primary-600)">10</div>
+          <div style="width:54px;height:44px;background:var(--primary-200);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--primary-700)">14</div>
+          <div style="width:54px;height:44px;background:#bccff0;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--primary-700)">20</div>
+        </div>
+        <h4 style="margin-top:28px">阴影 Elevation</h4>
+        <div class="shadow-row">
+          <div style="box-shadow:var(--sh-1)">Level 1</div>
+          <div style="box-shadow:var(--sh-2)">Level 2</div>
+          <div style="box-shadow:var(--sh-3)">Level 3</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 组件库 -->
+  <div class="chapter"><span class="no">02</span><h2>核心组件</h2><p>Components · 一致、可复用、易交互</p></div>
+  <div class="panel">
+    <div class="comp-grid">
+      <div class="comp-block">
+        <h4>按钮 Buttons</h4>
+        <div class="btn-row">
+          <button class="btn pri">主要操作</button>
+          <button class="btn">次要操作</button>
+          <button class="btn ghost">文字按钮</button>
+        </div>
+        <div class="btn-row" style="margin-top:12px">
+          <button class="btn sm pri"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>新建</button>
+          <button class="btn sm"><svg class="ic" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>导出</button>
+        </div>
+      </div>
+      <div class="comp-block">
+        <h4>标签与状态 Tags & Chips</h4>
+        <div class="btn-row">
+          <span class="chip">政策理论</span><span class="chip gold">金句</span>
+          <span class="chip green">已确认</span><span class="chip gray">待确认</span>
+        </div>
+        <div class="btn-row" style="margin-top:12px">
+          <span class="tag">小标题</span><span class="tag gold">精选</span>
+          <span class="tag green">逐字通过</span><span class="tag amber">复习中</span>
+        </div>
+      </div>
+      <div class="comp-block">
+        <h4>输入框 Inputs</h4>
+        <span class="field-lbl">素材搜索</span>
+        <div class="input" style="color:var(--ink-400)">输入关键词、主题或媒体…</div>
+      </div>
+      <div class="comp-block">
+        <h4>素材卡片 Material Card</h4>
+        <div class="mat" style="padding:12px">
+          <div class="mat-top"><span class="tag gold">金句</span><span class="tag">政策理论</span></div>
+          <div class="mat-q">基层强则国家强，基层安则天下安。</div>
+          <div class="mat-foot"><span>求是 · 2026-08</span><a>查看原文 ↗</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 界面 1：今日 ============ -->
+  <div class="mockup-wrap" id="screen-home">
+    <div class="mockup-label"><span class="n">1</span><h3>今日 · 工作概览</h3><p>一屏掌握积累进度与近期动态</p></div>
+    <div class="window">
+      <div class="win-bar"><i class="win-dot r"></i><i class="win-dot y"></i><i class="win-dot g"></i><span class="win-title">砚田 · 遴选素材库 — 今日</span></div>
+      <div class="app">
+        <aside class="side">
+          <div class="logo"><div class="logo-mark">砚</div><div class="logo-txt"><b>砚田</b><small>YANTIAN</small></div></div>
+          <nav class="nav">
+            <a class="active"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>今日</a>
+            <a><svg class="ic" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>素材库</a>
+            <a><svg class="ic" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>写作台</a>
+            <a><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>采集</a>
+            <a><svg class="ic" viewBox="0 0 24 24"><path d="M2 12h4l3-9 5 18 3-9h5"/></svg>复习</a>
+            <div class="sep"></div>
+            <a><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>设置</a>
+          </nav>
+          <div class="side-foot">
+            <div class="sync-status"><span class="pulse"></span>拾页库已同步</div>
+            <div class="mini">最近同步：今天 09:00 · 本地存储</div>
+          </div>
+        </aside>
+        <div class="main">
+          <div class="topbar">
+            <div class="crumb">工作台 / <b>今日</b></div>
+            <div class="top-search"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg><span>搜索素材…</span></div>
+            <div class="icon-btn"><svg class="ic" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg><i class="badge-dot"></i></div>
+            <div class="avatar">李</div>
+          </div>
+          <div class="content">
+            <div class="page-title">今日</div>
+            <div class="page-sub">厚积薄发，每一条素材都在为考场蓄力</div>
+            <div class="hero">
+              <div>
+                <h3>下午好，继续今天的积累</h3>
+                <p>距 2026 年度遴选笔试还有 128 天 · 本周已沉淀 24 条素材</p>
+                <div class="hero-actions">
+                  <button class="hero-btn pri"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>同步拾页库</button>
+                  <button class="hero-btn"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>采集素材</button>
+                  <button class="hero-btn"><svg class="ic" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>打开写作台</button>
+                </div>
+              </div>
+              <div class="day"><b>128</b><span>DAYS TO GO</span></div>
+            </div>
+            <div class="stat-grid">
+              <div class="stat"><div class="top"><span class="lbl">素材总量</span><span class="ico" style="background:var(--primary-50);color:var(--primary-500)"><svg class="ic" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span></div><div class="num">286</div><div class="delta">较上周 <b>+24</b></div></div>
+              <div class="stat"><div class="top"><span class="lbl">已确认</span><span class="ico" style="background:var(--success-bg);color:var(--success)"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span></div><div class="num">198</div><div class="delta">逐字校验通过</div></div>
+              <div class="stat"><div class="top"><span class="lbl">待整理</span><span class="ico" style="background:var(--warning-bg);color:var(--warning)"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span></div><div class="num">12</div><div class="delta">AI 抽取候选</div></div>
+              <div class="stat"><div class="top"><span class="lbl">复习进度</span><span class="ico" style="background:var(--gold-bg);color:var(--gold)"><svg class="ic" viewBox="0 0 24 24"><path d="M2 12h4l3-9 5 18 3-9h5"/></svg></span></div><div class="num">68%</div><div class="delta">已掌握 135 / 198</div></div>
+            </div>
+            <div class="today-grid">
+              <div class="card">
+                <div class="card-h"><h4>近 7 日积累趋势</h4><a>查看详情 →</a></div>
+                <div class="card-b">
+                  <div class="bars">
+                    <div class="bar-col"><div class="v" style="height:34%"></div><small>周五</small></div>
+                    <div class="bar-col"><div class="v" style="height:52%"></div><small>周六</small></div>
+                    <div class="bar-col"><div class="v" style="height:28%"></div><small>周日</small></div>
+                    <div class="bar-col"><div class="v" style="height:66%"></div><small>周一</small></div>
+                    <div class="bar-col"><div class="v" style="height:45%"></div><small>周二</small></div>
+                    <div class="bar-col"><div class="v" style="height:78%"></div><small>周三</small></div>
+                    <div class="bar-col"><div class="v today" style="height:92%"></div><small>今天</small></div>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-h"><h4>最近入库</h4><a>查看全部 →</a></div>
+                <div class="card-b" style="padding-top:6px;padding-bottom:6px">
+                  <div class="feed-item"><span class="feed-mark g"></span><div class="feed-body"><p>基层强则国家强，基层安则天下安。</p><div class="feed-meta"><span>求是</span><span>金句</span><span>10 分钟前</span></div></div></div>
+                  <div class="feed-item"><span class="feed-mark"></span><div class="feed-body"><p>以"绣花功夫"提升基层治理精细化水平</p><div class="feed-meta"><span>人民日报</span><span>小标题</span><span>1 小时前</span></div></div></div>
+                  <div class="feed-item"><span class="feed-mark g"></span><div class="feed-body"><p>山东持续深化放管服改革，优化营商环境</p><div class="feed-meta"><span>山东宣传</span><span>改革实践</span><span>昨天</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 界面 2：素材库 ============ -->
+  <div class="mockup-wrap" id="screen-library">
+    <div class="mockup-label"><span class="n">2</span><h3>素材库 · 检索与筛选</h3><p>全文检索 + 主题导航 + 出处溯源</p></div>
+    <div class="window">
+      <div class="win-bar"><i class="win-dot r"></i><i class="win-dot y"></i><i class="win-dot g"></i><span class="win-title">砚田 · 遴选素材库 — 素材库</span></div>
+      <div class="app">
+        <aside class="side">
+          <div class="logo"><div class="logo-mark">砚</div><div class="logo-txt"><b>砚田</b><small>YANTIAN</small></div></div>
+          <nav class="nav">
+            <a><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>今日</a>
+            <a class="active"><svg class="ic" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>素材库</a>
+            <a><svg class="ic" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>写作台</a>
+            <a><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>采集</a>
+            <a><svg class="ic" viewBox="0 0 24 24"><path d="M2 12h4l3-9 5 18 3-9h5"/></svg>复习</a>
+          </nav>
+          <div class="side-foot"><div class="sync-status"><span class="pulse"></span>拾页库已同步</div><div class="mini">本地存储 · 数据不出电脑</div></div>
+        </aside>
+        <div class="main">
+          <div class="topbar">
+            <div class="crumb">工作台 / <b>素材库</b></div>
+            <div class="top-search"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg><span>搜索素材…</span></div>
+            <div class="icon-btn"><svg class="ic" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg></div>
+            <div class="avatar">李</div>
+          </div>
+          <div class="content">
+            <div class="page-title">素材库</div>
+            <div class="page-sub">共 286 条素材 · 全部来自权威媒体，逐字可溯</div>
+            <div class="lib-toolbar">
+              <div class="lib-search"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg><span>搜索金句、标题、关键词或媒体…</span></div>
+              <button class="btn"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg>筛选</button>
+            </div>
+            <div class="filter-chips">
+              <span class="chip on">全部 286</span><span class="chip">金句 124</span><span class="chip">小标题 68</span>
+              <span class="chip">改革实践 54</span><span class="chip">好文章 40</span><span class="chip gray">待确认 12</span>
+            </div>
+            <div class="lib-layout">
+              <div class="topic-tree">
+                <h5>主题分类</h5>
+                <a class="on">全部素材 <span>286</span></a>
+                <a>政策理论 <span>96</span></a>
+                <a>综合分析 <span>72</span></a>
+                <a>文字表达 <span>65</span></a>
+                <a>山东实践 <span>53</span></a>
+                <h5 style="margin-top:18px">来源媒体</h5>
+                <a>人民日报 <span>102</span></a>
+                <a>求是 <span>48</span></a>
+                <a>半月谈 <span>36</span></a>
+                <a>人民论坛 <span>31</span></a>
+                <a>山东宣传 <span>28</span></a>
+              </div>
+              <div class="mat-list">
+                <div class="mat sel">
+                  <div class="mat-top"><span class="tag gold">金句</span><span class="tag">政策理论</span><span class="tag green">已确认</span></div>
+                  <div class="mat-q">基层强则国家强，基层安则天下安。</div>
+                  <div class="mat-foot"><span>求是 · 2026-08</span><span>3 天前入库</span><a>查看原文 ↗</a></div>
+                </div>
+                <div class="mat">
+                  <div class="mat-top"><span class="tag">小标题</span><span class="tag">综合分析</span><span class="tag green">已确认</span></div>
+                  <div class="mat-q">以"绣花功夫"提升基层治理精细化水平</div>
+                  <div class="mat-foot"><span>人民日报 · 2026-08</span><span>5 天前入库</span><a>查看原文 ↗</a></div>
+                </div>
+                <div class="mat">
+                  <div class="mat-top"><span class="tag gold">金句</span><span class="tag">文字表达</span><span class="tag amber">待确认</span></div>
+                  <div class="mat-q">抓落实，贵在持之以恒，要有钉钉子精神，一锤接着一锤敲。</div>
+                  <div class="mat-foot"><span>人民日报 · 2026-08</span><span>今天入库</span><a>查看原文 ↗</a></div>
+                </div>
+                <div class="mat">
+                  <div class="mat-top"><span class="tag">改革实践</span><span class="tag">山东实践</span><span class="tag green">已确认</span></div>
+                  <div class="mat-q">山东持续深化放管服改革，优化营商环境，激发市场主体活力。</div>
+                  <div class="mat-foot"><span>山东宣传 · 2026-07</span><span>1 周前入库</span><a>查看原文 ↗</a></div>
+                </div>
+              </div>
+              <div class="detail">
+                <h5>素材详情</h5>
+                <div class="q">基层强则国家强，基层安则天下安。</div>
+                <div class="row"><span>类型</span><b>金句</b></div>
+                <div class="row"><span>主题</span><b>政策理论 · 综合分析</b></div>
+                <div class="row"><span>来源媒体</span><b>求是网</b></div>
+                <div class="row"><span>作者</span><b>本报评论员</b></div>
+                <div class="row"><span>采集时间</span><b>2026-08-04 09:30</b></div>
+                <div class="row"><span>适用题型</span><b>案例分析 · 政策理论</b></div>
+                <div class="verify"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>逐字校验通过 · 出处完整</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 界面 3：写作台 ============ -->
+  <div class="mockup-wrap" id="screen-write">
+    <div class="mockup-label"><span class="n">3</span><h3>写作台 · 素材调取（核心差异）</h3><p>按主题成套调取，一键复制含出处引用</p></div>
+    <div class="window">
+      <div class="win-bar"><i class="win-dot r"></i><i class="win-dot y"></i><i class="win-dot g"></i><span class="win-title">砚田 · 遴选素材库 — 写作台</span></div>
+      <div class="app">
+        <aside class="side">
+          <div class="logo"><div class="logo-mark">砚</div><div class="logo-txt"><b>砚田</b><small>YANTIAN</small></div></div>
+          <nav class="nav">
+            <a><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>今日</a>
+            <a><svg class="ic" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>素材库</a>
+            <a class="active"><svg class="ic" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>写作台</a>
+            <a><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>采集</a>
+            <a><svg class="ic" viewBox="0 0 24 24"><path d="M2 12h4l3-9 5 18 3-9h5"/></svg>复习</a>
+          </nav>
+          <div class="side-foot"><div class="sync-status"><span class="pulse"></span>拾页库已同步</div><div class="mini">本地存储 · 数据不出电脑</div></div>
+        </aside>
+        <div class="main">
+          <div class="topbar">
+            <div class="crumb">工作台 / <b>写作台</b></div>
+            <div class="top-search"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg><span>搜索素材…</span></div>
+            <div class="icon-btn"><svg class="ic" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg></div>
+            <div class="avatar">李</div>
+          </div>
+          <div class="content">
+            <div class="page-title">写作台</div>
+            <div class="page-sub">选主题 → 调素材 → 写材料，出处随文带走</div>
+            <div class="topic-tabs">
+              <span class="topic-tab on">政策理论</span><span class="topic-tab">综合分析</span>
+              <span class="topic-tab">文字表达</span><span class="topic-tab">山东实践</span>
+            </div>
+            <div class="write-layout">
+              <div class="pack">
+                <h5>金句 · 3</h5>
+                <div class="pick on"><span class="cbox"></span><p>基层强则国家强，基层安则天下安。</p></div>
+                <div class="pick on"><span class="cbox"></span><p>抓落实，贵在持之以恒，要有钉钉子精神</p></div>
+                <div class="pick"><span class="cbox"></span><p>为政之道，贵在实干；干事之要，重在担当</p></div>
+                <h5>写作小标题 · 2</h5>
+                <div class="pick on"><span class="cbox"></span><p>以"绣花功夫"提升基层治理精细化水平</p></div>
+                <div class="pick"><span class="cbox"></span><p>下足"苦功夫"，写好"民生卷"</p></div>
+                <h5>改革实践 · 2</h5>
+                <div class="pick"><span class="cbox"></span><p>山东深化放管服改革，优化营商环境</p></div>
+                <div class="pick"><span class="cbox"></span><p>菏泽发展汉服产业，赋能乡村振兴</p></div>
+              </div>
+              <div class="editor">
+                <div class="editor-h"><input value="以钉钉子精神推动基层治理现代化" readonly><span class="tag gold">草稿</span></div>
+                <div class="editor-tools"><span>正文</span><span>标题</span><span>小标题</span><span>引用</span><span style="margin-left:auto">自动保存 ✓</span></div>
+                <div class="editor-body">
+                  　　<span class="ins">基层强则国家强，基层安则天下安。</span>基层治理是国家治理的基石，事关群众切身利益与社会和谐稳定。<br><br>
+                  　　<span class="ins">以"绣花功夫"提升基层治理精细化水平</span>，要求我们在工作中既要宏观着眼，更要微观着手。<span class="cursor"></span><br><br>
+                  　　<span class="ph">继续写作，选中左侧素材可快速插入到此处…</span>
+                </div>
+              </div>
+              <div class="selected">
+                <h5>已选素材</h5>
+                <div class="n">3 条 · 复制时自动附带出处</div>
+                <div class="sel-item"><p>基层强则国家强，基层安则天下安。</p><div class="src">求是 · 2026-08</div></div>
+                <div class="sel-item"><p>抓落实，贵在持之以恒，要有钉钉子精神</p><div class="src">人民日报 · 2026-08</div></div>
+                <div class="sel-item"><p>以"绣花功夫"提升基层治理精细化水平</p><div class="src">人民日报 · 2026-08</div></div>
+                <button class="copy-btn"><svg class="ic" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>复制全部引用</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 界面 4：采集 ============ -->
+  <div class="mockup-wrap" id="screen-capture">
+    <div class="mockup-label"><span class="n">4</span><h3>采集 · AI 抽取与确认</h3><p>逐字校验兜底，候选必须人工确认</p></div>
+    <div class="window">
+      <div class="win-bar"><i class="win-dot r"></i><i class="win-dot y"></i><i class="win-dot g"></i><span class="win-title">砚田 · 遴选素材库 — 采集</span></div>
+      <div class="app">
+        <aside class="side">
+          <div class="logo"><div class="logo-mark">砚</div><div class="logo-txt"><b>砚田</b><small>YANTIAN</small></div></div>
+          <nav class="nav">
+            <a><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>今日</a>
+            <a><svg class="ic" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>素材库</a>
+            <a><svg class="ic" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>写作台</a>
+            <a class="active"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>采集</a>
+            <a><svg class="ic" viewBox="0 0 24 24"><path d="M2 12h4l3-9 5 18 3-9h5"/></svg>复习</a>
+          </nav>
+          <div class="side-foot"><div class="sync-status"><span class="pulse"></span>拾页库已同步</div><div class="mini">本地存储 · 数据不出电脑</div></div>
+        </aside>
+        <div class="main">
+          <div class="topbar">
+            <div class="crumb">工作台 / <b>采集</b></div>
+            <div class="top-search"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg><span>搜索素材…</span></div>
+            <div class="icon-btn"><svg class="ic" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg></div>
+            <div class="avatar">李</div>
+          </div>
+          <div class="content">
+            <div class="page-title">采集</div>
+            <div class="page-sub">从拾页原文沉淀素材 · 每一行都可溯源</div>
+            <div class="cap-tabs">
+              <span class="cap-tab on">拾页原文</span><span class="cap-tab">手动导入</span><span class="cap-tab">导出 / 导入包</span>
+            </div>
+            <div class="cap-layout">
+              <div>
+                <div class="card" style="padding:14px">
+                  <div class="note on">
+                    <h5>以钉钉子精神抓落实</h5>
+                    <div class="m"><span>人民日报</span><span>·</span><span>今天 09:30</span><span class="act">重新抽取</span></div>
+                  </div>
+                  <div class="note">
+                    <h5>以"绣花功夫"提升基层治理水平</h5>
+                    <div class="m"><span>人民论坛</span><span>·</span><span>昨天</span><span class="act">抽取候选</span></div>
+                  </div>
+                  <div class="note">
+                    <h5>求是：扎实推进共同富裕</h5>
+                    <div class="m"><span>求是</span><span>·</span><span>3 天前</span><span class="act">抽取候选</span></div>
+                  </div>
+                  <div class="note">
+                    <h5>山东改革创新典型案例汇编</h5>
+                    <div class="m"><span>山东宣传</span><span>·</span><span>5 天前</span><span class="act">抽取候选</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="cand-panel">
+                <div class="cand-head">
+                  <h4>AI 抽取候选 · 5 条</h4>
+                  <div class="ai-badge"><svg class="ic" viewBox="0 0 24 24"><path d="M12 2l2.4 7.4L22 12l-7.6 2.6L12 22l-2.4-7.4L2 12l7.6-2.6L12 2z"/></svg>本地抽取 · 已逐字校验</div>
+                </div>
+                <div class="cand">
+                  <div class="cand-body"><div class="cand-q">抓落实，贵在持之以恒，要有钉钉子精神，一锤接着一锤敲。</div>
+                    <div class="cand-meta"><span class="tag gold">金句</span><span class="tag green">逐字通过</span><span class="conf">置信度 92%</span></div></div>
+                  <button class="cand-btn">确认入库</button>
+                </div>
+                <div class="cand">
+                  <div class="cand-body"><div class="cand-q">抓落实，是党的路线方针政策转化为实际行动的关键环节。</div>
+                    <div class="cand-meta"><span class="tag gold">金句</span><span class="tag green">逐字通过</span><span class="conf">置信度 86%</span></div></div>
+                  <button class="cand-btn">确认入库</button>
+                </div>
+                <div class="cand">
+                  <div class="cand-body"><div class="cand-q">各级政府要把抓落实作为工作的主旋律</div>
+                    <div class="cand-meta"><span class="tag">小标题</span><span class="tag green">逐字通过</span><span class="conf">置信度 78%</span></div></div>
+                  <button class="cand-btn">确认入库</button>
+                </div>
+                <div class="cand">
+                  <div class="cand-body"><div class="cand-q">确保各项决策部署落地见效，层层压实责任。</div>
+                    <div class="cand-meta"><span class="tag gold">金句</span><span class="tag green">逐字通过</span><span class="conf">置信度 74%</span></div></div>
+                  <button class="cand-btn">确认入库</button>
+                </div>
+                <div class="cand" style="opacity:.6">
+                  <div class="cand-body"><div class="cand-q">某编造的金句内容不会出现在候选列表，逐字校验直接丢弃…</div>
+                    <div class="cand-meta"><span class="tag amber">已丢弃</span><span style="color:var(--danger)">非原文片段</span></div></div>
+                  <button class="cand-btn done" style="border-color:var(--border);color:var(--ink-400);background:#f5f5f5">已拦截</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 界面 5：复习 ============ -->
+  <div class="mockup-wrap" id="screen-review">
+    <div class="mockup-label"><span class="n">5</span><h3>复习 · 翻卡内化</h3><p>待巩固优先，把素材真正记进脑子里</p></div>
+    <div class="window">
+      <div class="win-bar"><i class="win-dot r"></i><i class="win-dot y"></i><i class="win-dot g"></i><span class="win-title">砚田 · 遴选素材库 — 复习</span></div>
+      <div class="app">
+        <aside class="side">
+          <div class="logo"><div class="logo-mark">砚</div><div class="logo-txt"><b>砚田</b><small>YANTIAN</small></div></div>
+          <nav class="nav">
+            <a><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>今日</a>
+            <a><svg class="ic" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>素材库</a>
+            <a><svg class="ic" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>写作台</a>
+            <a><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>采集</a>
+            <a class="active"><svg class="ic" viewBox="0 0 24 24"><path d="M2 12h4l3-9 5 18 3-9h5"/></svg>复习</a>
+          </nav>
+          <div class="side-foot"><div class="sync-status"><span class="pulse"></span>拾页库已同步</div><div class="mini">本地存储 · 数据不出电脑</div></div>
+        </aside>
+        <div class="main">
+          <div class="topbar">
+            <div class="crumb">工作台 / <b>复习</b></div>
+            <div class="top-search"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg><span>搜索素材…</span></div>
+            <div class="icon-btn"><svg class="ic" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg></div>
+            <div class="avatar">李</div>
+          </div>
+          <div class="content">
+            <div class="page-title">复习</div>
+            <div class="page-sub">今日待巩固 24 张 · 优先复习掌握度低的素材</div>
+            <div class="review-wrap">
+              <div class="rv-progress"><span>第 6 张 / 共 24 张</span><div class="track"><div class="fill"></div></div><span>25%</span></div>
+              <div class="flash">
+                <div class="face-tag">正面 · 政策理论 / 金句</div>
+                <div class="front-q">请回忆：关于"基层治理根基"的经典表述</div>
+                <div class="hint">点击卡片翻面查看答案</div>
+              </div>
+              <div class="rv-actions">
+                <button class="rv-btn"><svg class="ic" style="display:inline;vertical-align:-3px;width:14px;height:14px" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> 上一张</button>
+                <button class="rv-btn good"><svg class="ic" style="display:inline;vertical-align:-3px;width:14px;height:14px" viewBox="0 0 24 24"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="10"/></svg> 巩固中</button>
+                <button class="rv-btn best"><svg class="ic" style="display:inline;vertical-align:-3px;width:14px;height:14px" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> 已掌握</button>
+                <button class="rv-btn">下一张 →</button>
+              </div>
+              <div class="rv-dots"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="cur"></i><i></i><i></i><i></i><i></i></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 移动端适配章节 ============ -->
+  <div class="doc" style="padding-top:20px">
+    <div class="chapter"><span class="no">04</span><h2>移动端适配</h2><p>Mobile · 单列流式，拇指优先</p></div>
+    <div class="mobile-intro">
+      <h3>把闭环装进口袋</h3>
+      <p>移动端不是桌面的等比缩放，而是针对"通勤速记、碎片复习、随时调取"场景的重新设计：单列布局承载核心内容，底部标签栏让五个模块一步可达，主要操作沉入拇指区，逐字校验与出处随文的原则一以贯之。</p>
+      <div class="mkeys"><span>单列流式布局</span><span>底部标签导航</span><span>44px 触摸目标</span><span>拇指区优先</span><span>渐进披露</span></div>
+    </div>
+
+    <div class="phone-wall">
+
+      <!-- ===== 移动端 1：今日 ===== -->
+      <div class="mockup-wrap" id="screen-m-home" style="margin:0">
+        <div class="phone">
+          <div class="m-screen">
+            <div class="m-status"><span class="m-time">9:41</span><div class="m-island"></div>
+              <div class="m-sysicons"><svg viewBox="0 0 18 12"><path d="M1 9h2M5 7h2M9 4.5h2M13 2h2"/></svg><svg viewBox="0 0 18 12"><path d="M1 4a12 12 0 0 1 16 0M4 7a8 8 0 0 1 10 0M7 10a3 3 0 0 1 4 0"/></svg><svg viewBox="0 0 20 12"><rect x="1" y="2" width="15" height="8" rx="2"/><path d="M18 5v2"/></svg></div>
+            </div>
+            <div class="m-appbar"><h2>砚田</h2><span class="m-sub">今日</span>
+              <div class="m-right"><div class="m-ibtn"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg></div><div class="m-av">李</div></div>
+            </div>
+            <div class="m-body">
+              <div class="m-hero">
+                <div class="m-hero-top"><div><h3>下午好，继续积累</h3><p>本周已沉淀 24 条素材</p></div>
+                <div class="m-day"><b>128</b><span>天后开考</span></div></div>
+                <div class="m-quick">
+                  <button class="pri"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>同步拾页库</button>
+                  <button><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>采集素材</button>
+                  <button><svg class="ic" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>写作台</button>
+                </div>
+              </div>
+              <div class="m-stat2 m-sec">
+                <div class="m-stat"><div class="m-lbl">素材总量</div><div class="m-num">286</div><div class="m-delta">较上周 <b>+24</b></div></div>
+                <div class="m-stat"><div class="m-lbl">已确认</div><div class="m-num">198</div><div class="m-delta">逐字校验通过</div></div>
+                <div class="m-stat"><div class="m-lbl">待整理</div><div class="m-num">12</div><div class="m-delta">AI 抽取候选</div></div>
+                <div class="m-stat"><div class="m-lbl">复习进度</div><div class="m-num">68%</div><div class="m-delta">已掌握 135 / 198</div></div>
+              </div>
+              <div class="m-card m-sec">
+                <div class="m-card-h"><h4>近 7 日积累趋势</h4><a>详情 →</a></div>
+                <div class="m-card-b"><div class="m-bars">
+                  <div class="m-bcol"><div class="v" style="height:34%"></div><small>五</small></div>
+                  <div class="m-bcol"><div class="v" style="height:52%"></div><small>六</small></div>
+                  <div class="m-bcol"><div class="v" style="height:28%"></div><small>日</small></div>
+                  <div class="m-bcol"><div class="v" style="height:66%"></div><small>一</small></div>
+                  <div class="m-bcol"><div class="v" style="height:45%"></div><small>二</small></div>
+                  <div class="m-bcol"><div class="v" style="height:78%"></div><small>三</small></div>
+                  <div class="m-bcol"><div class="v today" style="height:92%"></div><small>今</small></div>
+                </div></div>
+              </div>
+              <div class="m-card">
+                <div class="m-card-h"><h4>最近入库</h4><a>全部 →</a></div>
+                <div class="m-card-b" style="padding-top:4px;padding-bottom:4px">
+                  <div class="m-feed"><span class="mk g"></span><div><p>基层强则国家强，基层安则天下安。</p><div class="meta"><span>求是</span><span>金句</span><span>10 分钟前</span></div></div></div>
+                  <div class="m-feed"><span class="mk"></span><div><p>以"绣花功夫"提升基层治理精细化水平</p><div class="meta"><span>人民日报</span><span>小标题</span><span>1 小时前</span></div></div></div>
+                </div>
+              </div>
+            </div>
+            <div class="m-tabs">
+              <div class="m-tab on"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>今日</span></div>
+              <div class="m-tab"><svg class="ic" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>素材库</span></div>
+              <div class="m-tab"><svg class="ic" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg><span>写作台</span></div>
+              <div class="m-tab"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>采集</span></div>
+              <div class="m-tab"><svg class="ic" viewBox="0 0 24 24"><path d="M2 12h4l3-9 5 18 3-9h5"/></svg><span>复习</span></div>
+            </div>
+            <div class="m-home-ind"><i></i></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 移动端 2：素材库 ===== -->
+      <div class="mockup-wrap" id="screen-m-library" style="margin:0">
+        <div class="phone">
+          <div class="m-screen">
+            <div class="m-status"><span class="m-time">9:41</span><div class="m-island"></div>
+              <div class="m-sysicons"><svg viewBox="0 0 18 12"><path d="M1 9h2M5 7h2M9 4.5h2M13 2h2"/></svg><svg viewBox="0 0 18 12"><path d="M1 4a12 12 0 0 1 16 0M4 7a8 8 0 0 1 10 0M7 10a3 3 0 0 1 4 0"/></svg><svg viewBox="0 0 20 12"><rect x="1" y="2" width="15" height="8" rx="2"/><path d="M18 5v2"/></svg></div>
+            </div>
+            <div class="m-appbar"><h2>素材库</h2><span class="m-sub">286 条</span>
+              <div class="m-right"><div class="m-ibtn"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg></div></div>
+            </div>
+            <div class="m-body">
+              <div class="m-search"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg><span>搜索金句、标题、关键词…</span></div>
+              <div class="m-chips"><span class="m-chip on">全部 286</span><span class="m-chip">金句 124</span><span class="m-chip">小标题 68</span><span class="m-chip">改革实践 54</span></div>
+              <div class="m-mat on">
+                <div class="tags"><span class="m-tag gold">金句</span><span class="m-tag">政策理论</span><span class="m-tag green">已确认</span></div>
+                <div class="q">基层强则国家强，基层安则天下安。</div>
+                <div class="foot"><span>求是 · 2026-08</span><span>3 天前</span><a>查看原文 ↗</a></div>
+              </div>
+              <div class="m-mat">
+                <div class="tags"><span class="m-tag">小标题</span><span class="m-tag">综合分析</span><span class="m-tag green">已确认</span></div>
+                <div class="q">以"绣花功夫"提升基层治理精细化水平</div>
+                <div class="foot"><span>人民日报 · 2026-08</span><span>5 天前</span><a>查看原文 ↗</a></div>
+              </div>
+              <div class="m-mat">
+                <div class="tags"><span class="m-tag gold">金句</span><span class="m-tag">文字表达</span><span class="m-tag amber">待确认</span></div>
+                <div class="q">抓落实，贵在持之以恒，要有钉钉子精神，一锤接着一锤敲。</div>
+                <div class="foot"><span>人民日报 · 2026-08</span><span>今天</span><a>查看原文 ↗</a></div>
+              </div>
+              <div class="m-card" style="margin-top:4px">
+                <div class="m-card-h m-detail-h"><h4>素材详情</h4><a>收起</a></div>
+                <div class="m-card-b">
+                  <div class="m-quote">基层强则国家强，基层安则天下安。</div>
+                  <div class="m-row"><span>主题</span><b>政策理论 · 综合分析</b></div>
+                  <div class="m-row"><span>来源</span><b>求是网 · 本报评论员</b></div>
+                  <div class="m-row"><span>适用题型</span><b>案例分析 · 政策理论</b></div>
+                  <div class="m-verify"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>逐字校验通过 · 出处完整</div>
+                </div>
+              </div>
+            </div>
+            <div class="m-tabs">
+              <div class="m-tab"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>今日</span></div>
+              <div class="m-tab on"><svg class="ic" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>素材库</span></div>
+              <div class="m-tab"><svg class="ic" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg><span>写作台</span></div>
+              <div class="m-tab"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>采集</span></div>
+              <div class="m-tab"><svg class="ic" viewBox="0 0 24 24"><path d="M2 12h4l3-9 5 18 3-9h5"/></svg><span>复习</span></div>
+            </div>
+            <div class="m-home-ind"><i></i></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 移动端 3：写作台 ===== -->
+      <div class="mockup-wrap" id="screen-m-write" style="margin:0">
+        <div class="phone">
+          <div class="m-screen">
+            <div class="m-status"><span class="m-time">9:41</span><div class="m-island"></div>
+              <div class="m-sysicons"><svg viewBox="0 0 18 12"><path d="M1 9h2M5 7h2M9 4.5h2M13 2h2"/></svg><svg viewBox="0 0 18 12"><path d="M1 4a12 12 0 0 1 16 0M4 7a8 8 0 0 1 10 0M7 10a3 3 0 0 1 4 0"/></svg><svg viewBox="0 0 20 12"><rect x="1" y="2" width="15" height="8" rx="2"/><path d="M18 5v2"/></svg></div>
+            </div>
+            <div class="m-appbar"><h2>写作台</h2><span class="m-sub">草稿</span>
+              <div class="m-right"><div class="m-ibtn"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div></div>
+            </div>
+            <div class="m-body">
+              <div class="m-topic"><span class="on">政策理论</span><span>综合分析</span><span>文字表达</span><span>山东实践</span></div>
+              <div class="m-write-tabs"><span class="on">素材包</span><span>编辑器</span></div>
+              <div class="m-subh" style="margin-top:0">金句 · 3</div>
+              <div class="m-pick on"><span class="m-cbox"></span><p>基层强则国家强，基层安则天下安。</p></div>
+              <div class="m-pick on"><span class="m-cbox"></span><p>抓落实，贵在持之以恒，要有钉钉子精神</p></div>
+              <div class="m-subh">写作小标题 · 2</div>
+              <div class="m-pick on"><span class="m-cbox"></span><p>以"绣花功夫"提升基层治理精细化水平</p></div>
+              <div class="m-pick"><span class="m-cbox"></span><p>下足"苦功夫"，写好"民生卷"</p></div>
+              <div class="m-editor">
+                <div class="eh"><input value="以钉钉子精神推动基层治理现代化" readonly></div>
+                <div class="et"><span class="on">正文</span><span>标题</span><span>小标题</span><span>引用</span><span style="margin-left:auto">已保存 ✓</span></div>
+                <div class="eb">　　<span class="ins">基层强则国家强，基层安则天下安。</span>基层治理是国家治理的基石……<br><br>　　<span class="ins">以"绣花功夫"提升基层治理精细化水平</span>，要求我们既要宏观着眼……<span class="m-cursor"></span></div>
+              </div>
+              <button class="m-copy"><svg class="ic" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>复制 3 条引用（含出处）</button>
+            </div>
+            <div class="m-tabs">
+              <div class="m-tab"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>今日</span></div>
+              <div class="m-tab"><svg class="ic" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>素材库</span></div>
+              <div class="m-tab on"><svg class="ic" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg><span>写作台</span></div>
+              <div class="m-tab"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>采集</span></div>
+              <div class="m-tab"><svg class="ic" viewBox="0 0 24 24"><path d="M2 12h4l3-9 5 18 3-9h5"/></svg><span>复习</span></div>
+            </div>
+            <div class="m-home-ind"><i></i></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 移动端 4：采集 ===== -->
+      <div class="mockup-wrap" id="screen-m-capture" style="margin:0">
+        <div class="phone">
+          <div class="m-screen">
+            <div class="m-status"><span class="m-time">9:41</span><div class="m-island"></div>
+              <div class="m-sysicons"><svg viewBox="0 0 18 12"><path d="M1 9h2M5 7h2M9 4.5h2M13 2h2"/></svg><svg viewBox="0 0 18 12"><path d="M1 4a12 12 0 0 1 16 0M4 7a8 8 0 0 1 10 0M7 10a3 3 0 0 1 4 0"/></svg><svg viewBox="0 0 20 12"><rect x="1" y="2" width="15" height="8" rx="2"/><path d="M18 5v2"/></svg></div>
+            </div>
+            <div class="m-appbar"><h2>采集</h2><span class="m-sub">逐字校验</span>
+              <div class="m-right"><div class="m-ibtn"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div></div>
+            </div>
+            <div class="m-body">
+              <div class="m-cap-tabs"><span class="on">拾页原文</span><span>手动导入</span><span>导入/导出</span></div>
+              <div class="m-subh" style="margin-top:0">原文笔记 · 选择后抽取</div>
+              <div class="m-note on"><h5>以钉钉子精神抓落实</h5><div class="m"><span>人民日报</span><span>·</span><span>今天 09:30</span><span class="act">重新抽取</span></div></div>
+              <div class="m-note"><h5>以"绣花功夫"提升基层治理水平</h5><div class="m"><span>人民论坛</span><span>·</span><span>昨天</span><span class="act">抽取候选</span></div></div>
+              <div class="m-sech" style="margin-top:12px"><h4 style="font-size:11px">AI 抽取候选 · 5 条</h4><span class="m-ai-badge"><svg class="ic" viewBox="0 0 24 24"><path d="M12 2l2.4 7.4L22 12l-7.6 2.6L12 22l-2.4-7.4L2 12l7.6-2.6L12 2z"/></svg>已逐字校验</span></div>
+              <div class="m-cand">
+                <div class="q">抓落实，贵在持之以恒，要有钉钉子精神，一锤接着一锤敲。</div>
+                <div class="meta"><span class="m-tag gold">金句</span><span class="m-tag green">逐字通过</span><span class="conf">置信度 92%</span></div>
+                <button class="btn">确认入库</button>
+              </div>
+              <div class="m-cand">
+                <div class="q">各级政府要把抓落实作为工作的主旋律</div>
+                <div class="meta"><span class="m-tag">小标题</span><span class="m-tag green">逐字通过</span><span class="conf">置信度 78%</span></div>
+                <button class="btn">确认入库</button>
+              </div>
+              <div class="m-cand">
+                <div class="q">某编造金句不会出现，逐字校验直接丢弃…</div>
+                <div class="meta"><span class="m-tag amber">已丢弃</span><span style="color:var(--danger);font-size:8px">非原文片段</span></div>
+                <button class="btn done">已拦截</button>
+              </div>
+            </div>
+            <div class="m-tabs">
+              <div class="m-tab"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>今日</span></div>
+              <div class="m-tab"><svg class="ic" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>素材库</span></div>
+              <div class="m-tab"><svg class="ic" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg><span>写作台</span></div>
+              <div class="m-tab on"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>采集</span></div>
+              <div class="m-tab"><svg class="ic" viewBox="0 0 24 24"><path d="M2 12h4l3-9 5 18 3-9h5"/></svg><span>复习</span></div>
+            </div>
+            <div class="m-home-ind"><i></i></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 移动端 5：复习 ===== -->
+      <div class="mockup-wrap" id="screen-m-review" style="margin:0">
+        <div class="phone">
+          <div class="m-screen">
+            <div class="m-status"><span class="m-time">9:41</span><div class="m-island"></div>
+              <div class="m-sysicons"><svg viewBox="0 0 18 12"><path d="M1 9h2M5 7h2M9 4.5h2M13 2h2"/></svg><svg viewBox="0 0 18 12"><path d="M1 4a12 12 0 0 1 16 0M4 7a8 8 0 0 1 10 0M7 10a3 3 0 0 1 4 0"/></svg><svg viewBox="0 0 20 12"><rect x="1" y="2" width="15" height="8" rx="2"/><path d="M18 5v2"/></svg></div>
+            </div>
+            <div class="m-appbar"><h2>复习</h2><span class="m-sub">今日 24 张</span>
+              <div class="m-right"><div class="m-ibtn"><svg class="ic" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div></div>
+            </div>
+            <div class="m-body" style="padding-bottom:0">
+              <div class="m-rev">
+                <div class="m-rprog"><span>第 6 / 24</span><div class="track"><div class="fill"></div></div><span>25%</span></div>
+                <div class="m-flash">
+                  <div class="tag">正面 · 政策理论 / 金句</div>
+                  <div class="q">请回忆：关于"基层治理根基"的经典表述</div>
+                  <div class="hint">点击卡片翻面查看答案</div>
+                </div>
+                <div class="m-rbtns">
+                  <button class="m-rbtn"><svg class="ic" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>上一张</button>
+                  <button class="m-rbtn good"><svg class="ic" viewBox="0 0 24 24"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="10"/></svg>巩固中</button>
+                  <button class="m-rbtn best"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>已掌握</button>
+                </div>
+                <div class="m-rdots"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="cur"></i><i></i><i></i><i></i><i></i></div>
+              </div>
+            </div>
+            <div class="m-tabs">
+              <div class="m-tab"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>今日</span></div>
+              <div class="m-tab"><svg class="ic" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>素材库</span></div>
+              <div class="m-tab"><svg class="ic" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg><span>写作台</span></div>
+              <div class="m-tab"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>采集</span></div>
+              <div class="m-tab on"><svg class="ic" viewBox="0 0 24 24"><path d="M2 12h4l3-9 5 18 3-9h5"/></svg><span>复习</span></div>
+            </div>
+            <div class="m-home-ind"><i></i></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <p style="text-align:center;font-size:11px;color:var(--ink-400);margin-top:6px">图 4 · 移动端五屏：与桌面端共用设计令牌，针对拇指操作与碎片场景重组信息架构</p>
+  </div>
+
+  <div class="doc" style="padding-bottom:40px">
+    <div class="chapter"><span class="no">03</span><h2>设计原则</h2><p>为什么这样设计</p></div>
+    <div class="panel" style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px 40px">
+      <div><h4 style="font-size:14px;margin-bottom:6px">① 单一主色，克制点缀</h4><p style="font-size:12px;color:var(--ink-500)">墨蓝贯穿全局建立专业信任感；暖金只用于"金句/精选"，让最有价值的内容自然跳脱，不滥用颜色。</p></div>
+      <div><h4 style="font-size:14px;margin-bottom:6px">② 留白分层，而非堆砌分割线</h4><p style="font-size:12px;color:var(--ink-500)">用 4px 栅格与充足留白建立呼吸感，卡片与间距承担层级表达，减少视觉噪音。</p></div>
+      <div><h4 style="font-size:14px;margin-bottom:6px">③ 出处随文，防误引内建</h4><p style="font-size:12px;color:var(--ink-500)">每条素材强制显示来源与逐字校验状态；"逐字通过"徽章让党媒引用的零差错可见、可信。</p></div>
+      <div><h4 style="font-size:14px;margin-bottom:6px">④ 闭环导向，服务考场生产力</h4><p style="font-size:12px;color:var(--ink-500)">采集→沉淀→写作台调取→复习内化，每个界面都对应闭环的一环，不做泛泛的收藏夹。</p></div>
+      <div><h4 style="font-size:14px;margin-bottom:6px">⑤ 无障碍合规</h4><p style="font-size:12px;color:var(--ink-500)">正文对比度 ≥ 4.5:1，触控目标 ≥ 32px，语义色不单独承载信息，符合 WCAG AA。</p></div>
+      <div><h4 style="font-size:14px;margin-bottom:6px">⑥ 宋体金句，文化质感</h4><p style="font-size:12px;color:var(--ink-500)">金句正文用宋体，呼应"砚田"的文化意象与慢读调性，与界面无衬线体形成恰当层次。</p></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// 截图模式：URL 加 #shot=home|library|write|capture|review 时只显示对应界面
+(function(){
+  var m = location.hash.match(/shot=(\w+)/);
+  if(!m) return;
+  var target = document.getElementById('screen-' + m[1]);
+  document.body.classList.add('shot-mode');
+  if(target){
+    target.classList.add('target');
+    document.title = '砚田 · ' + (target.querySelector('h3')?.textContent || m[1]);
+  }
+})();
+</script>
+</body>
+</html>
