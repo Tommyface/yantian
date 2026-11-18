@@ -53,40 +53,59 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x android/gradlew
 
-      - name: Build debug APK
+      - name: Restore signing keystore
+        env:
+          SIGNING_KEYSTORE_B64: ${{ secrets.SIGNING_KEYSTORE_B64 }}
+        run: |
+          set -e
+          mkdir -p android/app/build
+          echo "$SIGNING_KEYSTORE_B64" | base64 -d > android/app/build/yantian-release.jks
+          echo "keystore restored: $(stat -c%s android/app/build/yantian-release.jks) bytes"
+
+      - name: Build signed release APK
         working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
+        env:
+          SIGNING_STORE_PASS: ${{ secrets.SIGNING_STORE_PASS }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEYSTORE_FILE: ${{ github.workspace }}/android/app/build/yantian-release.jks
+        run: ./gradlew assembleRelease --no-daemon
 
       - name: Locate APK
         id: apk
         run: |
-          APK=$(find android/app/build/outputs/apk/debug -name '*.apk' | head -n 1)
+          APK=$(find android/app/build/outputs/apk/release -name '*.apk' | head -n 1)
           echo "path=$APK" >> "$GITHUB_OUTPUT"
-          cp "$APK" yantian-mobile-debug.apk
-          echo "size=$(stat -c%s yantian-mobile-debug.apk)" >> "$GITHUB_OUTPUT"
+          cp "$APK" yantian-mobile.apk
+          echo "size=$(stat -c%s yantian-mobile.apk)" >> "$GITHUB_OUTPUT"
+          # 校验签名指纹，确保统一签名生效
+          echo "=== signed APK certificate ==="
+          keytool -printcert -jarfile yantian-mobile.apk | grep -E 'Owner:|SHA256:' || true
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: yantian-mobile-apk
-          path: yantian-mobile-debug.apk
+          path: yantian-mobile.apk
           if-no-files-found: error
 
       - name: Create Release with APK
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.4.1-android
-          name: 砚田 v0.4.1 · Android 移动版
+          tag_name: v0.4.2-android
+          name: 砚田 v0.4.2 · Android 移动版（统一签名）
           body: |
             砚田 Android 移动版 —— 完整离线内核（检索/复习/生成卡片），数据留在本机。
 
+            - **统一签名**：本版起使用固定正式密钥签名，可与后续版本无缝覆盖升级（无需卸载、数据不丢）
             - 本地 md + 坚果云 WebDAV 同步（App 内配置应用专用密码）
             - 采集 → 逐字校验抽取 → 确认入库 → 检索 → 复习 全链路
             - Capacitor + WebView 内核，离线可用
+            - 修复移动端顶部栏高度过高（52px → 44px，兼容刘海屏）
 
             安装：下载 APK，在安卓手机上安装（需允许安装未知来源应用）。
-          files: yantian-mobile-debug.apk
+            升级：从 v0.4.2 起可直接覆盖安装，无需卸载；若从更早的 v0.4.0/v0.4.1（临时调试签名）升级，需先卸载一次以统一签名。
+          files: yantian-mobile.apk
           draft: false
-          prerelease: true
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
