@@ -9,7 +9,7 @@ if (!ksPass && file('signing.properties').exists()) {
     file('signing.properties').withInputStream { props.load(it) }
     ksPass = props.getProperty('storePass')
 }
-def keyAlias = System.getenv('SIGNING_KEY_ALIAS') ?: 'yantian'
+def signingKeyAliasName = System.getenv('SIGNING_KEY_ALIAS') ?: 'yantian'
 
 android {
     namespace "cn.yantian.mobile"
@@ -33,12 +33,12 @@ android {
                 // CI：从 base64 环境变量还原到构建目录
                 storeFile file(System.getenv('SIGNING_KEYSTORE_FILE') ?: "$buildDir/yantian-release.jks")
                 storePassword System.getenv('SIGNING_STORE_PASS')
-                keyAlias keyAlias
+                keyAlias signingKeyAliasName
                 keyPassword System.getenv('SIGNING_STORE_PASS')
             } else if (keystoreFile.exists() && ksPass) {
                 storeFile keystoreFile
                 storePassword ksPass
-                keyAlias keyAlias
+                keyAlias signingKeyAliasName
                 keyPassword ksPass
             }
         }
