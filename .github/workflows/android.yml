@@ -1,5 +1,15 @@
 name: Build Yantian Mobile APK
 
+# ============================================================
+# 版本号规则（全自动，无需手动改）：
+#   versionCode = GitHub Actions run_number（单调递增，保证可覆盖安装）
+#   versionName = <VERSION_BASE>.<run_number>
+#   Release tag = v<versionName>-android
+# 只有升大版本时改下面的 VERSION_BASE（如 0.4 → 0.5），其余一律不管。
+# ============================================================
+env:
+  VERSION_BASE: "0.4"
+
 on:
   push:
     branches: [ mobile ]
@@ -14,6 +24,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Compute version
+        id: ver
+        env:
+          BASE: ${{ env.VERSION_BASE }}
+        run: |
+          set -e
+          CODE="${{ github.run_number }}"
+          NAME="${BASE}.${CODE}"
+          TAG="v${NAME}-android"
+          echo "code=${CODE}" >> "$GITHUB_OUTPUT"
+          echo "name=${NAME}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "砚田版本 => versionCode=${CODE}  versionName=${NAME}  tag=${TAG}"
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -68,7 +92,12 @@ jobs:
           SIGNING_STORE_PASS: ${{ secrets.SIGNING_STORE_PASS }}
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           SIGNING_KEYSTORE_FILE: ${{ github.workspace }}/android/app/build/yantian-release.jks
-        run: ./gradlew assembleRelease --no-daemon
+          YANTIAN_VERSION_CODE: ${{ steps.ver.outputs.code }}
+          YANTIAN_VERSION_NAME: ${{ steps.ver.outputs.name }}
+        run: |
+          ./gradlew assembleRelease --no-daemon
+          echo "=== built version ==="
+          aapt dump badging app/build/outputs/apk/release/*.apk 2>/dev/null | grep -E '^package:' || true
 
       - name: Locate APK
         id: apk
@@ -77,7 +106,6 @@ jobs:
           echo "path=$APK" >> "$GITHUB_OUTPUT"
           cp "$APK" yantian-mobile.apk
           echo "size=$(stat -c%s yantian-mobile.apk)" >> "$GITHUB_OUTPUT"
-          # 校验签名指纹，确保统一签名生效
           echo "=== signed APK certificate ==="
           keytool -printcert -jarfile yantian-mobile.apk | grep -E 'Owner:|SHA256:' || true
 
@@ -91,19 +119,22 @@ jobs:
       - name: Create Release with APK
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.4.2-android
-          name: 砚田 v0.4.2 · Android 移动版（统一签名）
+          tag_name: ${{ steps.ver.outputs.tag }}
+          name: 砚田 ${{ steps.ver.outputs.name }} · Android 移动版（统一签名）
           body: |
             砚田 Android 移动版 —— 完整离线内核（检索/复习/生成卡片），数据留在本机。
+            本版本由 CI 自动构建发布（版本号随构建序号递增，无需人工维护）。
 
-            - **统一签名**：本版起使用固定正式密钥签名，可与后续版本无缝覆盖升级（无需卸载、数据不丢）
+            - **统一签名**：固定正式密钥签名，可与后续版本无缝覆盖升级（无需卸载、数据不丢）
             - 本地 md + 坚果云 WebDAV 同步（App 内配置应用专用密码）
             - 采集 → 逐字校验抽取 → 确认入库 → 检索 → 复习 全链路
             - Capacitor + WebView 内核，离线可用
-            - 修复移动端顶部栏高度过高（52px → 44px，兼容刘海屏）
+            - 移动端顶部栏高度已优化（52px → 44px，兼容刘海屏）
+
+            versionCode: ${{ steps.ver.outputs.code }} ｜ versionName: ${{ steps.ver.outputs.name }}
 
             安装：下载 APK，在安卓手机上安装（需允许安装未知来源应用）。
-            升级：从 v0.4.2 起可直接覆盖安装，无需卸载；若从更早的 v0.4.0/v0.4.1（临时调试签名）升级，需先卸载一次以统一签名。
+            升级：从 v0.4.2 起可直接覆盖安装；若从更早的 v0.4.0/v0.4.1（临时调试签名）升级，需先卸载一次。
           files: yantian-mobile.apk
           draft: false
           prerelease: false
