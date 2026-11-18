@@ -2,7 +2,7 @@ name: Build Yantian Mobile APK
 
 on:
   push:
-    branches: [ main ]
+    branches: [ mobile ]
   workflow_dispatch:
 
 permissions:
@@ -75,8 +75,8 @@ jobs:
       - name: Create Release with APK
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.4.0-android
-          name: 砚田 v0.4.0 · Android 移动版
+          tag_name: v0.4.1-android
+          name: 砚田 v0.4.1 · Android 移动版
           body: |
             砚田 Android 移动版 —— 完整离线内核（检索/复习/生成卡片），数据留在本机。
 
