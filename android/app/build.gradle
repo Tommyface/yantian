@@ -81,6 +81,8 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
+    // WebDAV 原生插件：OkHttp 支持 PROPFIND/MKCOL 等自定义方法（WebView fetch 与 CapacitorHttp 均不支持）
+    implementation "com.squareup.okhttp3:okhttp:4.12.0"
 }
 
 apply from: 'capacitor.build.gradle'

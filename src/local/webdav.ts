@@ -9,6 +9,7 @@
 
 import { Capacitor } from '@capacitor/core';
 import { kv, noteStore } from './store';
+import { nativeRequest } from './webdavHttp';
 
 export interface WebDavConfig {
   baseUrl: string;      // 例如 https://dav.jianguoyun.com/dav/yantian
@@ -59,13 +60,14 @@ const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
 async function rawHttp(url: string, method: string, headers: Record<string, string>, data?: string): Promise<HttpResp> {
   if (Capacitor.isNativePlatform()) {
-    // 原生 HTTP 插件在 CI 若未安装则回退 fetch
+    // 原生平台：优先走自研 OkHttp 插件（唯一支持 PROPFIND/MKCOL 的通道）。
     try {
-      const pluginId = '@capacitor-community/http';
-      const mod = await import(/* @vite-ignore */ pluginId) as { Http: { request(o: Record<string, unknown>): Promise<{ status: number; data: unknown; headers?: Record<string, string> }> } };
-      const r = await mod.Http.request({ url, method, headers, data });
-      return { ok: r.status >= 200 && r.status < 300, status: r.status, text: typeof r.data === 'string' ? r.data : JSON.stringify(r.data), headers: r.headers || {} };
-    } catch { /* 插件不可用 → 走 fetch */ }
+      const r = await nativeRequest(url, method, headers, data);
+      return { ok: r.ok, status: r.status, text: r.body ?? '', headers: r.headers || {} };
+    } catch (e) {
+      // 插件不可用时（如旧包未包含）再回退 fetch；CORS 场景会失败，但至少不崩。
+      console.warn('WebDavHttp 插件不可用，回退 fetch:', e);
+    }
   }
   const res = await fetch(url, { method, headers, body: data });
   const respHeaders: Record<string, string> = {};
