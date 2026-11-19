@@ -30,20 +30,34 @@ export const api = {
     const remote = await listRemoteEntries(cfg);
     const remoteSet = new Set(remote.map(e => e.name));
     const manifest = await getSyncManifest();
+    // 一次性迁移：旧版 manifest 用裸 name 作键，迁到 library/ 前缀，避免升级后全量重新下载。
+    let migrated = false;
+    for (const k of Object.keys(manifest.etags)) {
+      if (k.includes('/')) continue;
+      if (manifest.etags[`library/${k}`] === undefined) {
+        manifest.etags[`library/${k}`] = manifest.etags[k];
+        migrated = true;
+      }
+      delete manifest.etags[k];
+    }
     const localList = await noteStore.list();
     const byName = new Map(localList.map(n => [n.filePath.split('/').pop() || '', n]));
+    // manifest 键用 dir/name，避免 library 与 inbox 同名文件互相干扰。
+    const keyOf = (dir: string, name: string) => `${dir}/${name}`;
+    if (migrated) await setSyncManifest(manifest);
 
     // 拉取/更新：仅在云端文件「缺失本地副本」或「ETag 变化」时才下载。
     for (const entry of remote) {
       const name = entry.name;
+      const mkey = keyOf(entry.dir, name);
       const exist = byName.get(name);
-      const unchanged = !!exist && manifest.initialized && manifest.etags[name] === entry.etag;
+      const unchanged = !!exist && manifest.initialized && manifest.etags[mkey] === entry.etag;
       if (unchanged) {
         // ETag 未变且本地有副本 → 跳过，不发起 GET，避免全量拉取触发限流。
         skipped++;
         continue;
       }
-      const raw = await downloadNote(name, cfg);
+      const raw = await downloadNote(name, cfg, entry.dir);
       if (exist) {
         if (exist.raw !== raw) { await noteStore.save({ ...exist, raw }); updated++; }
         else { updated++; }
@@ -52,7 +66,7 @@ export const api = {
         await noteStore.save({ sourceId, filePath: CLOUD + name, raw, createdAt: new Date().toISOString() });
         added++;
       }
-      manifest.etags[name] = entry.etag;
+      manifest.etags[mkey] = entry.etag;
     }
 
     // 删除同步：仅清理「云端来源且远端已消失」的笔记，绝不碰手动导入内容。
@@ -66,9 +80,10 @@ export const api = {
           await K.removeCardsOf(note.sourceId);
           await noteStore.remove(note.sourceId);
           removed++;
+          // 云端已消失的文件，两目录的同步清单键都清掉，避免残留。
+          delete manifest.etags[`library/${name}`];
+          delete manifest.etags[`inbox/${name}`];
         }
-        // 云端已消失的文件，同步清单里也清掉，避免残留
-        if (!remoteSet.has(name)) delete manifest.etags[name];
       }
     }
 

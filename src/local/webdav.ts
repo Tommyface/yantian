@@ -17,8 +17,8 @@ export interface WebDavConfig {
   autoUpload: boolean;
 }
 
-/** 远端单个文件：文件名 + ETag（增量同步的变更标记） */
-export interface RemoteEntry { name: string; etag: string }
+/** 远端单个文件：文件名 + ETag（增量同步的变更标记）+ 所在子目录（library/inbox） */
+export interface RemoteEntry { name: string; etag: string; dir: string }
 
 /** 同步清单：记录每个远端文件上次成功同步时的 ETag */
 export interface SyncManifest {
@@ -123,33 +123,42 @@ export async function uploadAll(cfg?: WebDavConfig): Promise<number> {
 }
 
 /**
- * PROPFIND 列出远端 library/*.md，保留每个文件的 ETag。
+ * PROPFIND 列出远端笔记（library + inbox 两目录），保留每个文件的 ETag 与所在目录。
+ * 兼容旧版拾页把 md 传到 inbox 的历史数据；同名以 library 为准（新版规范位置）。
  * 以 <response> 块为单位配对 href 与 getetag，兼容命名空间前缀差异。
  */
 export async function listRemoteEntries(cfg?: WebDavConfig): Promise<RemoteEntry[]> {
   const conf = cfg || await getWebDavConfig();
   if (!isWebDavConfigured(conf)) throw new Error('尚未配置坚果云 WebDAV');
-  const url = `${conf.baseUrl.replace(/\/$/, '')}/library/`;
-  const r = await http(url, 'PROPFIND', {
-    Authorization: authHeader(conf), Depth: '1', 'Content-Type': 'application/xml',
-  }, `<?xml version="1.0"?><d:propfind xmlns:d="DAV:"><d:prop><d:getetag/></d:prop></d:propfind>`);
-  if (!r.ok && r.status !== 207) throw new Error(`列目录失败: HTTP ${r.status}`);
-  const entries: RemoteEntry[] = [];
-  const respRe = /<(?:[A-Za-z0-9_-]+:)?response\b[^>]*>([\s\S]*?)<\/(?:[A-Za-z0-9_-]+:)?response>/gi;
-  const hrefRe = /<(?:[A-Za-z0-9_-]+:)?href>([^<]+)<\/(?:[A-Za-z0-9_-]+:)?href>/i;
-  const etagRe = /<(?:[A-Za-z0-9_-]+:)?getetag>([^<]*)<\/(?:[A-Za-z0-9_-]+:)?getetag>/i;
-  for (const m of r.text.matchAll(respRe)) {
-    const block = m[1];
-    const href = block.match(hrefRe)?.[1];
-    if (!href) continue;
-    if (href.split('/').some(s => s === '..' || s.toLowerCase() === '%2e%2e')) continue;
-    let name: string;
-    try { name = decodeURIComponent(href.split('/').pop() || ''); } catch { continue; }
-    if (!/\.md$/i.test(name) || name.includes('..')) continue;
-    const etag = (block.match(etagRe)?.[1] || '').trim();
-    entries.push({ name, etag });
+  const base = conf.baseUrl.replace(/\/$/, '');
+  const merged = new Map<string, RemoteEntry>();
+  // 先 inbox（旧位置），再 library（新位置）覆盖同名。
+  for (const dir of ['inbox', 'library']) {
+    const url = `${base}/${dir}/`;
+    const r = await http(url, 'PROPFIND', {
+      Authorization: authHeader(conf), Depth: '1', 'Content-Type': 'application/xml',
+    }, `<?xml version="1.0"?><d:propfind xmlns:d="DAV:"><d:prop><d:getetag/></d:prop></d:propfind>`);
+    if (!r.ok && r.status !== 207) {
+      if (r.status === 404) { await sleep(60); continue; } // 目录不存在视为空
+      throw new Error(`列目录失败(${dir}): HTTP ${r.status}`);
+    }
+    const respRe = /<(?:[A-Za-z0-9_-]+:)?response\b[^>]*>([\s\S]*?)<\/(?:[A-Za-z0-9_-]+:)?response>/gi;
+    const hrefRe = /<(?:[A-Za-z0-9_-]+:)?href>([^<]+)<\/(?:[A-Za-z0-9_-]+:)?href>/i;
+    const etagRe = /<(?:[A-Za-z0-9_-]+:)?getetag>([^<]*)<\/(?:[A-Za-z0-9_-]+:)?getetag>/i;
+    for (const m of r.text.matchAll(respRe)) {
+      const block = m[1];
+      const href = block.match(hrefRe)?.[1];
+      if (!href) continue;
+      if (href.split('/').some(s => s === '..' || s.toLowerCase() === '%2e%2e')) continue;
+      let name: string;
+      try { name = decodeURIComponent(href.split('/').pop() || ''); } catch { continue; }
+      if (!/\.md$/i.test(name) || name.includes('..')) continue;
+      const etag = (block.match(etagRe)?.[1] || '').trim();
+      merged.set(name, { name, etag, dir });
+    }
+    await sleep(60); // 节流
   }
-  return entries;
+  return [...merged.values()];
 }
 
 /** 兼容旧调用：只返回文件名数组 */
@@ -157,10 +166,10 @@ export async function listRemote(cfg?: WebDavConfig): Promise<string[]> {
   return (await listRemoteEntries(cfg)).map(e => e.name);
 }
 
-/** 下载远端 md 文本 */
-export async function downloadNote(name: string, cfg?: WebDavConfig): Promise<string> {
+/** 下载远端 md 文本；dir 指定来源目录（library/inbox），兼容旧版 inbox 数据。 */
+export async function downloadNote(name: string, cfg?: WebDavConfig, dir = 'library'): Promise<string> {
   const conf = cfg || await getWebDavConfig();
-  const url = `${conf.baseUrl.replace(/\/$/, '')}/library/${encodeURIComponent(name)}`;
+  const url = `${conf.baseUrl.replace(/\/$/, '')}/${dir}/${encodeURIComponent(name)}`;
   const r = await http(url, 'GET', { Authorization: authHeader(conf) });
   if (!r.ok) throw new Error(`下载失败 ${name}: HTTP ${r.status}`);
   await sleep(60); // 节流
@@ -172,7 +181,8 @@ export async function testConnection(cfg: WebDavConfig): Promise<{ ok: boolean; 
   if (!isWebDavConfigured(cfg)) return { ok: false, message: '请填写完整地址、账号与应用专用密码' };
   try {
     await ensureDir(cfg, 'library');
-    return { ok: true, message: '连接成功，library/ 目录就绪' };
+    await ensureDir(cfg, 'inbox');
+    return { ok: true, message: '连接成功，library/ 与 inbox/ 目录就绪' };
   } catch (e) {
     return { ok: false, message: e instanceof Error ? e.message : '连接失败' };
   }
