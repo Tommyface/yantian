@@ -125,9 +125,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const syncScan = async () => {
     try {
       const rep = await api.scan();
-      showToast(`同步完成：新增 ${rep.added ?? 0} 条`);
+      // 增量同步：重点展示「变化了多少、跳过了多少未变项」，让防限流效果可见。
+      const changed = rep.changed ?? ((rep.added ?? 0) + (rep.updated ?? 0) + (rep.removed ?? 0));
+      const parts = [`变化 ${changed}`];
+      if (rep.added) parts.push(`新增 ${rep.added}`);
+      if (rep.updated) parts.push(`更新 ${rep.updated}`);
+      if (rep.removed) parts.push(`移除 ${rep.removed}`);
+      if (rep.skipped) parts.push(`跳过 ${rep.skipped}`);
+      showToast(`已从${rep.from ?? '坚果云'}同步：${parts.join(' / ')}`);
       await refresh();
     } catch (e) {
+      // 隐患修复：未配置 / 网络失败都会走到这里，显示真实原因而非"同步完成"。
       showToast(e instanceof Error ? e.message : '同步失败');
     }
   };

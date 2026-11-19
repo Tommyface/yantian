@@ -225,6 +225,15 @@ export async function setCardMastery(id: string, mastery: Mastery): Promise<Mate
   return c;
 }
 
+/** 删除某篇原文名下的全部卡片（删除同步时用，避免留下指向空原文的孤儿卡片）。 */
+export async function removeCardsOf(sourceId: string): Promise<number> {
+  const cards = await allCards();
+  const kept = cards.filter(c => c.sourceId !== sourceId);
+  const n = cards.length - kept.length;
+  if (n > 0) await saveCards(kept);
+  return n;
+}
+
 // ---------- 检索（中文子串 / 多词 AND） ----------
 function matchText(haystack: string, q: string): boolean {
   if (!q.trim()) return true;

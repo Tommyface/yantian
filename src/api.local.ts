@@ -2,7 +2,7 @@
 // 这样 UI 层（data.tsx / screens）零改动即可从"联机版"切换到"离线移动版"。
 
 import * as K from './local/kernel';
-import { getWebDavConfig, isWebDavConfigured, listRemote, downloadNote, uploadNote, uploadAll, testConnection, setWebDavConfig, type WebDavConfig } from './local/webdav';
+import { getWebDavConfig, isWebDavConfigured, listRemoteEntries, downloadNote, uploadNote, uploadAll, testConnection, setWebDavConfig, getSyncManifest, setSyncManifest, type WebDavConfig } from './local/webdav';
 import { noteStore } from './local/store';
 import type { SharedNote } from './types';
 
@@ -14,27 +14,69 @@ async function delay<T>(v: T, ms = 0): Promise<T> {
 export const api = {
   health: () => delay({ ok: true, name: 'yantian-mobile', version: '0.4.0-local' }),
   stats: () => K.stats(),
-  scan: async () => {
-    // 若配置了坚果云：拉取远端 library/*.md，新增/更新到本地
+  scan: async (): Promise<{ added: number; updated: number; removed: number; skipped: number; changed: number; from: string }> => {
+    // 从坚果云增量拉取拾页上传的 library/*.md：
+    // 只对「云端新增 / ETag 变化 / 本地缺失」的文件发起 GET，未变化的直接跳过。
     const cfg = await getWebDavConfig();
-    let added = 0, updated = 0, removed = 0;
-    if (isWebDavConfigured(cfg)) {
-      try {
-        const remote = await listRemote(cfg);
-        for (const name of remote) {
-          const raw = await downloadNote(name, cfg);
-          const exist = (await noteStore.list()).find(n => n.filePath.split('/').pop() === name);
-          if (exist) {
-            if (exist.raw !== raw) { await noteStore.save({ ...exist, raw }); updated++; }
-          } else {
-            const sourceId = name.replace(/\.md$/i, '');
-            await noteStore.save({ sourceId, filePath: `library/${name}`, raw, createdAt: new Date().toISOString() });
-            added++;
-          }
-        }
-      } catch { /* 同步失败不阻断本地使用 */ }
+    if (!isWebDavConfigured(cfg)) {
+      // 隐患①：未配置时不再静默返回"新增 0 条"，明确报错让用户去设置。
+      throw new Error('尚未配置坚果云，请先在「设置」里填写 WebDAV 地址、账号与应用专用密码');
     }
-    return { added, updated, removed };
+
+    const CLOUD = 'webdav/'; // 云端来源标记：只有这类笔记才允许被删除同步清理
+    let added = 0, updated = 0, removed = 0, skipped = 0;
+
+    // 隐患②：不再吞掉网络错误，失败直接上抛，UI 会显示真实原因。
+    const remote = await listRemoteEntries(cfg);
+    const remoteSet = new Set(remote.map(e => e.name));
+    const manifest = await getSyncManifest();
+    const localList = await noteStore.list();
+    const byName = new Map(localList.map(n => [n.filePath.split('/').pop() || '', n]));
+
+    // 拉取/更新：仅在云端文件「缺失本地副本」或「ETag 变化」时才下载。
+    for (const entry of remote) {
+      const name = entry.name;
+      const exist = byName.get(name);
+      const unchanged = !!exist && manifest.initialized && manifest.etags[name] === entry.etag;
+      if (unchanged) {
+        // ETag 未变且本地有副本 → 跳过，不发起 GET，避免全量拉取触发限流。
+        skipped++;
+        continue;
+      }
+      const raw = await downloadNote(name, cfg);
+      if (exist) {
+        if (exist.raw !== raw) { await noteStore.save({ ...exist, raw }); updated++; }
+        else { updated++; }
+      } else {
+        const sourceId = name.replace(/\.md$/i, '');
+        await noteStore.save({ sourceId, filePath: CLOUD + name, raw, createdAt: new Date().toISOString() });
+        added++;
+      }
+      manifest.etags[name] = entry.etag;
+    }
+
+    // 删除同步：仅清理「云端来源且远端已消失」的笔记，绝不碰手动导入内容。
+    // 仅当已完成过至少一次完整同步（initialized）后才执行，避免首次同步误删本地。
+    if (manifest.initialized) {
+      const local = await noteStore.list();
+      for (const note of local) {
+        if (!note.filePath.startsWith(CLOUD)) continue;
+        const name = note.filePath.split('/').pop() || '';
+        if (!remoteSet.has(name)) {
+          await K.removeCardsOf(note.sourceId);
+          await noteStore.remove(note.sourceId);
+          removed++;
+        }
+        // 云端已消失的文件，同步清单里也清掉，避免残留
+        if (!remoteSet.has(name)) delete manifest.etags[name];
+      }
+    }
+
+    manifest.initialized = true;
+    await setSyncManifest(manifest);
+
+    const changed = added + updated + removed;
+    return { added, updated, removed, skipped, changed, from: '坚果云' };
   },
   search: (q: string, filters: Record<string, string> = {}) => K.search(q, filters),
   notes: async (sourceId: string): Promise<SharedNote> => {
@@ -73,8 +115,8 @@ export const api = {
   webdav: {
     getConfig: getWebDavConfig,
     setConfig: async (cfg: WebDavConfig) => setWebDavConfig(cfg),
-    test: testConnection,
-    uploadAll,
-    listRemote,
-  },
+      test: testConnection,
+      uploadAll,
+      listRemote: listRemoteEntries,
+    },
 };
