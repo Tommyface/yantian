@@ -11,3 +11,7 @@ dist/
 # 运行时派生数据（事实源是 vault 原文与 cards.jsonl）
 .yantian/
 *.jsonl
+
+# ����˹����м����
+.build/
+dist-deb/

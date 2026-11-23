@@ -1,9 +1,10 @@
 /**
  * SQLite FTS5 检索层
  *
- * 选型：better-sqlite3 11.10.0 + FTS5 trigram tokenizer。
- *  - trigram 按 3 字符切分，天然支持中文子串匹配（如"基层治理"命中长句）。
- *  - 比 whoosh 更稳、同步 API 性能极佳；比 LIKE 全表扫描快一个量级。
+ * 选型：Node 自带的 node:sqlite（Node 24+，内置 FTS5 trigram）。
+ *  - trigram 按 3 字符切分，天然支持中文子串匹配（如“基层治理”命中长句）。
+ *  - 零原生依赖：信创环境（UOS V20 / glibc 2.28）下预编译原生模块对不上 glibc，
+ *    改用 Node 内置 SQLite 后整个应用不再有任何 .node 产物，跨发行版更稳。
  *
  * 架构：
  *  - notes / cards 主表存完整对象（JSON），FTS 虚表只存检索列 + UNINDEXED id。
@@ -12,8 +13,8 @@
  *  - 事实源仍是 cards.jsonl 与 library/*.md，本库是可随时重建的派生索引。
  */
 
-import Database from 'better-sqlite3';
-import type { Database as DatabaseType } from 'better-sqlite3';
+import { DatabaseSync } from 'node:sqlite';
+type DatabaseType = InstanceType<typeof DatabaseSync>;
 import type { SharedNote, MaterialCard, MaterialType, CompileStatus, ExamTopic, Scene } from '../contracts/index.js';
 
 export interface SearchHit {
@@ -55,9 +56,27 @@ export class SearchIndex {
   private db: DatabaseType;
 
   constructor(path: string = ':memory:') {
-    this.db = new Database(path);
-    this.db.pragma('journal_mode = WAL');
+    this.db = new DatabaseSync(path);
+    this.db.exec('PRAGMA journal_mode = WAL');
     this.createSchema();
+  }
+
+  /** 事务包装（node:sqlite 没有 .transaction 助手，手动 BEGIN/COMMIT；支持嵌套调用） */
+  private inTx = false;
+  private tx<T>(fn: () => T): T {
+    if (this.inTx) return fn();
+    this.inTx = true;
+    this.db.exec('BEGIN IMMEDIATE');
+    try {
+      const result = fn();
+      this.db.exec('COMMIT');
+      return result;
+    } catch (e) {
+      try { this.db.exec('ROLLBACK'); } catch { /* ignore */ }
+      throw e;
+    } finally {
+      this.inTx = false;
+    }
   }
 
   private createSchema(): void {
@@ -90,7 +109,7 @@ export class SearchIndex {
   indexNote(note: SharedNote): void {
     const payload = JSON.stringify(note);
     const site = note.front.site ?? '';
-    const tx = this.db.transaction(() => {
+    this.tx(() => {
       this.db.prepare(`INSERT INTO notes(source_id, site, payload) VALUES(?,?,?)
         ON CONFLICT(source_id) DO UPDATE SET site=excluded.site, payload=excluded.payload`)
         .run(note.sourceId, site, payload);
@@ -99,20 +118,18 @@ export class SearchIndex {
       this.db.prepare(`INSERT INTO notes_fts(source_id, title, body, site) VALUES(?,?,?,?)`)
         .run(note.sourceId, note.front.title ?? '', note.body, site);
     });
-    tx();
   }
 
   /** 批量索引笔记 */
   indexNotes(notes: SharedNote[]): void {
-    const tx = this.db.transaction((list: SharedNote[]) => list.forEach((n) => this.indexNote(n)));
-    tx(notes);
+    this.tx(() => notes.forEach((n) => this.indexNote(n)));
   }
 
   /** 索引（或更新）一张卡片 */
   indexCard(card: MaterialCard): void {
     const payload = JSON.stringify(card);
     const site = card.origin.site ?? '';
-    const tx = this.db.transaction(() => {
+    this.tx(() => {
       this.db.prepare(`INSERT INTO cards(card_id, source_id, type, status, site, payload)
         VALUES(?,?,?,?,?,?)
         ON CONFLICT(card_id) DO UPDATE SET source_id=excluded.source_id, type=excluded.type,
@@ -122,24 +139,21 @@ export class SearchIndex {
       this.db.prepare(`INSERT INTO cards_fts(card_id, content, excerpt, site) VALUES(?,?,?,?)`)
         .run(card.cardId, card.content, card.sourceExcerpt, site);
     });
-    tx();
   }
 
   indexCards(cards: MaterialCard[]): void {
-    const tx = this.db.transaction((list: MaterialCard[]) => list.forEach((c) => this.indexCard(c)));
-    tx(cards);
+    this.tx(() => cards.forEach((c) => this.indexCard(c)));
   }
 
   /** 删除某来源的全部索引（配合原文删除） */
   removeSource(sourceId: string): void {
-    const tx = this.db.transaction(() => {
+    this.tx(() => {
       const cardIds = (this.db.prepare('SELECT card_id FROM cards WHERE source_id=?').all(sourceId) as Array<{card_id:string}>).map(r=>r.card_id);
       for (const id of cardIds) this.db.prepare('DELETE FROM cards_fts WHERE card_id=?').run(id);
       this.db.prepare('DELETE FROM cards WHERE source_id=?').run(sourceId);
       this.db.prepare('DELETE FROM notes_fts WHERE source_id=?').run(sourceId);
       this.db.prepare('DELETE FROM notes WHERE source_id=?').run(sourceId);
     });
-    tx();
   }
 
   /**
