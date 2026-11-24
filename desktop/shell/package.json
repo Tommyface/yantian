@@ -1,0 +1,8 @@
+{
+  "name": "yantian",
+  "productName": "yantian",
+  "version": "0.3.0",
+  "private": true,
+  "description": "砚田 · 统信 UOS 桌面壳",
+  "main": "main.cjs"
+}

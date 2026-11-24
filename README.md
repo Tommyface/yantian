@@ -21,7 +21,7 @@ pnpm start              # 默认 vault=./vault，端口 8765
 | Q1 技术栈 | Node.js + TypeScript（Web 前端后续） | 需读取拾页本地文件 + 跑 FTS5，浏览器沙箱做不到；仍为 JS 栈 |
 | Q2 AI 抽取 | 本地模型为主，保留 API 接口 | 默认本地，接口预留（P2 实现） |
 | Q3 库位置 | 手机/电脑同一目录 | 单一共享库 |
-| Q4 检索 | SQLite FTS5（better-sqlite3 **11.10.0**） | 比 whoosh 稳、中文 trigram 子串匹配；版本已锁定（13.x 预编译在本环境段错误） |
+| Q4 检索 | SQLite FTS5（Node 内置 **node:sqlite**，需 Node 24+）| 同为 SQLite 引擎、中文 trigram 子串匹配；桌面端信创环境预编译原生模块对不上 glibc 2.28，改内置模块零原生依赖 |
 | Q5 起点 | 已完成 P0 → P1 | 逐层验证推进 |
 
 ## 目录结构
@@ -110,3 +110,5 @@ pnpm run typecheck   # 仅类型检查
 - 接入真实本地模型：配置 Ollama（默认 `qwen2.5:7b`）后，把 `FallbackExtractor` 换成 `OllamaExtractor` 即可启用模型抽取。
 - 拾页「导出到公共目录」小改造，用 Syncthing 替代导入包，打通手机↔电脑自动同步。
 - 前端深色夜读模式、「我的专题」自建分组。
+
+> AI生成

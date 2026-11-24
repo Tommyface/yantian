@@ -1,0 +1,46 @@
+name: UOS arm64 打包
+
+on:
+  push:
+    branches: [uos-desktop]
+    tags: ['v*-uos*']
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  deb:
+    name: 交叉构建 arm64 deb + 冒烟
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: 交叉构建 deb（arm64）
+        run: bash desktop/build/build-deb.sh
+
+      - name: 准备 QEMU（arm64 模拟）
+        uses: docker/setup-qemu-action@v3
+
+      - name: arm64 冒烟验证（debian 10 / glibc 2.28）
+        run: bash desktop/build/smoke-arm64.sh
+
+      # 说明：账号 Actions 存储配额已满，不再上传 artifact；打 tag 时直接发 Release
+
+      - name: 发布到 Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist-deb/*.deb
+            dist-deb/*.sha256
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
